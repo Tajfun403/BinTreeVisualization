@@ -1,0 +1,47 @@
+﻿<Page x:Class="BinTreeVisualization.UI.BinTreeMan"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:BinTreeVisualization.UI" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      mc:Ignorable="d" 
+      d:DesignHeight="600" d:DesignWidth="1000"
+     TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+     TextElement.FontWeight="Regular"
+     TextElement.FontSize="13"
+     TextOptions.TextFormattingMode="Ideal"
+     TextOptions.TextRenderingMode="Auto"
+     Background="{DynamicResource MaterialDesignPaper}"
+     FontFamily="{DynamicResource MaterialDesignFont}"
+      Title="BinTreeMan">
+
+
+    <Canvas Background="{DynamicResource MaterialDesignPaper}">
+
+        <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Width="1000" Height="190">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!--            <materialDesign:Card Padding="32" Margin="16">-->
+            <!--                <Label HorizontalAlignment="Left" Margin="40,71,0,0" VerticalAlignment="Top"/>-->
+            <!--            </materialDesign:Card>-->
+            <TextBox HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Center" Width="120" Grid.Column="0"/>
+            <Button Content="Insert item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"/>
+            <Button Content="Find item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2"/>
+            <Button Content="Delete item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="3"/>
+            <Button Content="Find min" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="4"/>
+            <Button Content="Find max" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="5"/>
+        </Grid>
+        <ContentControl VerticalAlignment="Center" Height="361" Width="980" Canvas.Left="10" Canvas.Top="195" HorizontalAlignment="Left"/>
+
+    </Canvas>
+
+</Page>
