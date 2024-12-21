@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinTreeVisualization", "BinTreeVisualization.csproj", "{FD973ED1-6F4B-4F0B-B0F4-A859FF7FFC9A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FD973ED1-6F4B-4F0B-B0F4-A859FF7FFC9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD973ED1-6F4B-4F0B-B0F4-A859FF7FFC9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD973ED1-6F4B-4F0B-B0F4-A859FF7FFC9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD973ED1-6F4B-4F0B-B0F4-A859FF7FFC9A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {34168DC8-3C53-4FA1-B6E9-62109F8C391B}
+	EndGlobalSection
+EndGlobal
