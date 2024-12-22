@@ -33,15 +33,15 @@
             <!--            <materialDesign:Card Padding="32" Margin="16">-->
             <!--                <Label HorizontalAlignment="Left" Margin="40,71,0,0" VerticalAlignment="Top"/>-->
             <!--            </materialDesign:Card>-->
-            <TextBox HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Center" Width="120" Grid.Column="0"/>
-            <Button Content="Insert item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"/>
+            <TextBox Name="InputTextBox" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Width="120" Grid.Column="0"
+                     Text="{Binding OperationArgument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="Insert item" Click="OnInsert" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"/>
             <Button Content="Find item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2"/>
             <Button Content="Delete item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="3"/>
             <Button Content="Find min" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="4"/>
             <Button Content="Find max" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="5"/>
         </Grid>
-        <ContentControl VerticalAlignment="Center" Height="361" Width="980" Canvas.Left="10" Canvas.Top="195" HorizontalAlignment="Left"/>
-
+        <local:BinTreeControl x:Name="TreeNode" VerticalAlignment="Center" Height="361" Width="980" Canvas.Left="10" Canvas.Top="195" HorizontalAlignment="Left"/>
     </Canvas>
 
 </Page>

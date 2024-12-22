@@ -13,16 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace BinTreeVisualization.UI
+namespace BinTreeVisualization.UI;
+
+/// <summary>
+/// Interaction logic for BinTree.xaml
+/// </summary>
+public partial class BinTreeControl : UserControl
 {
-    /// <summary>
-    /// Interaction logic for BinTree.xaml
-    /// </summary>
-    public partial class BinTree : UserControl
+    public BinTreeControl()
     {
-        public BinTree()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
     }
 }
