@@ -6,3 +6,12 @@ Operations to support:
 - Delete
 - Find min
 - Find max
+
+# Roadmap
+- [ x ] Initial UI setup
+- [   ] First block spawned
+- [   ] Setup text output
+- [   ] Setup animations
+- [   ] Setup arrows
+- [   ] Fill in algorithms
+- [   ] Add stats summaries
