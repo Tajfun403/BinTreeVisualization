@@ -7,8 +7,31 @@
              mc:Ignorable="d" 
              d:DesignHeight="100" d:DesignWidth="200"
          >
+    <UserControl.Resources>
+        <Color x:Key="ActiveColor">#b077e0</Color>
+        <Color x:Key="InactiveColor">#333</Color>
+        <Storyboard x:Key="AnimActivate">
+            <ColorAnimation 
+                Storyboard.TargetName="BgEllipse"
+                Storyboard.TargetProperty="Fill.Color"
+                From="{StaticResource InactiveColor}" To="{StaticResource ActiveColor}" Duration="0:0:.5" />
+
+        </Storyboard>
+        <Storyboard x:Key="AnimDeactivate">
+            <ColorAnimation 
+                Storyboard.TargetName="BgEllipse"
+                Storyboard.TargetProperty="Fill.Color"
+                From="{StaticResource ActiveColor}" To="{StaticResource InactiveColor}" Duration="0:0:.5" />
+        </Storyboard>
+    </UserControl.Resources>
     <Grid>
-        <Ellipse Stroke="#EEE" StrokeThickness="3" Fill="#333" Width="200" Height="100"/>
+        <Ellipse Name="BgEllipse" Stroke="#EEE" StrokeThickness="3" Width="200" Height="100">
+            <Ellipse.Fill>
+                <SolidColorBrush x:Name="BgBrush" Color="#333" />
+                <!-- <SolidColorBrush x:Name="InactiveBrush" Color="#333" /> -->
+                <!-- <SolidColorBrush x:Name="ActiveBrush" Color="#b077e0"/> -->
+            </Ellipse.Fill>
+        </Ellipse>
         <Label Content="{Binding ValToStr, UpdateSourceTrigger=PropertyChanged}"
              VerticalAlignment="Center" HorizontalAlignment="Center"
              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
