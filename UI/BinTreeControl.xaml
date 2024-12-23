@@ -9,7 +9,15 @@
              Background="{DynamicResource MaterialDesignPaper}"
              FontFamily="{DynamicResource MaterialDesignFont}"
              >
-    <Canvas Name="MainCanvas">
-        
-    </Canvas>
+    <Grid>
+        <Canvas Name="MainCanvas"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Top">
+        </Canvas>
+        <StackPanel Name="ProgressStackPanel" Panel.ZIndex="1000" Canvas.Top="0" Canvas.Right="0" HorizontalAlignment="Right" VerticalAlignment="Top"  Width="400" Height="200"
+                    >
+            <local:ProgressLabel Content="test"></local:ProgressLabel>
+        </StackPanel>
+    </Grid>
+
 </UserControl>

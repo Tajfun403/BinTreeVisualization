@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
 using BinTreeVisualization.UI;
@@ -54,8 +55,20 @@ public class Node<T> where T : IComparable<T>
         return 1 + parent.GetDepth();
     }
 
-    private const int ToBottomOffset = 100;
-    private const int ToSideOffset = 150;
+    /// <summary>
+    /// Get the balance of the node - how much taller is its left children trace than the right one
+    /// </summary>
+    /// <returns></returns>
+    public int GetNodeBalance()
+    {
+        return (Left?.GetDepth() ?? 0) - (Right?.GetDepth() ?? 0);
+    }
+
+    public const int ToBottomOffset = 100;
+    // public const int ToSideOffset = 150;
+    public const int ToSideOffset = 150;
+    public Point DesiredLoc { get; set; }
+    public Point CurrLoc => new(Canvas.GetLeft(BackingControl), Canvas.GetTop(BackingControl));
 
     public static Node<T> CreateRoot<T>(T value, BinTree<T> parent) where T : IComparable<T>
     {
@@ -74,15 +87,12 @@ public class Node<T> where T : IComparable<T>
         NodeControl el = new(value);
         Point oldLoc = new(Canvas.GetLeft(BackingControl), Canvas.GetTop(BackingControl));
         Point newLoc = new(oldLoc.X + (bLeft ? -ToSideOffset : ToSideOffset), oldLoc.Y + ToBottomOffset);
+        el.VerticalAlignment = VerticalAlignment.Top;
+        el.HorizontalAlignment = HorizontalAlignment.Center;
         Canvas.SetLeft(el, newLoc.X);
         Canvas.SetTop(el, newLoc.Y);
         tree.GetCanvas().Children.Add(el);
         return el;
-    }
-
-    public static void SpawnUIElem()
-    {
-        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -96,6 +106,44 @@ public class Node<T> where T : IComparable<T>
     public void Deactivate()
     {
         BackingControl.Deactivate();
+    }
+
+    public void MoveToLoc(Point loc)
+    {
+        float dur = 0.5f;
+        DoubleAnimation xAnimation = new()
+        {
+            To = loc.X,
+            Duration = TimeSpan.FromSeconds(dur)
+        };
+
+        DoubleAnimation yAnimation = new()
+        {
+            To = loc.Y,
+            Duration = TimeSpan.FromSeconds(dur)
+        };
+
+        // Apply animations to Canvas.Left and Canvas.Top
+        Storyboard storyboard = new();
+
+        Storyboard.SetTarget(xAnimation, BackingControl);
+        Storyboard.SetTargetProperty(xAnimation, new PropertyPath("(Canvas.Left)"));
+
+        Storyboard.SetTarget(yAnimation, BackingControl);
+        Storyboard.SetTargetProperty(yAnimation, new PropertyPath("(Canvas.Top)"));
+
+        storyboard.Children.Add(xAnimation);
+        storyboard.Children.Add(yAnimation);
+
+        DesiredLoc = loc;
+        storyboard.Begin();
+    }
+
+    public void BlinkSubtree()
+    {
+        BackingControl.Blink();
+        Left?.BlinkSubtree();
+        Right?.BlinkSubtree();
     }
 
 }

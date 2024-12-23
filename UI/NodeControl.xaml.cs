@@ -37,8 +37,12 @@ namespace BinTreeVisualization.UI
         public static Color InactiveColor => Color.FromArgb(0, 0, 0, 0);
         public static Color ActiveColor => Color.FromArgb(255, 180, 120, 225);
 
-/*        public static SolidColorBrush InactiveColor => new(Color.FromArgb(0, 0, 0, 0));
-        public static SolidColorBrush ActiveColor => new(Color.FromArgb(255, 180, 120, 225));*/
+        public static Color StrokeBase => Color.FromArgb(255, 238, 238, 238);
+
+        public static Color StrokeBlue => Color.FromArgb(255, 67, 149, 212);
+
+        /*        public static SolidColorBrush InactiveColor => new(Color.FromArgb(0, 0, 0, 0));
+                public static SolidColorBrush ActiveColor => new(Color.FromArgb(255, 180, 120, 225));*/
 
         // public event 
 
@@ -50,6 +54,11 @@ namespace BinTreeVisualization.UI
         public void Deactivate()
         {
             BeginStoryboard((Storyboard)FindResource("AnimDeactivate"));
+        }
+
+        public void Blink()
+        {
+            BeginStoryboard((Storyboard)FindResource("AnimBlink"));
         }
 
         public object Value

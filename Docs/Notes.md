@@ -1,4 +1,4 @@
-# General assigment
+# General assignment
 Make a visualization of basic operations on BST and AVL trees using any programming language and UI framework.
 Operations to support:
 - Search
@@ -8,10 +8,10 @@ Operations to support:
 - Find max
 
 # Roadmap
-- [ x ] Initial UI setup
-- [   ] First block spawned
-- [   ] Setup text output
-- [   ] Setup animations
+- [ X ] Initial UI setup
+- [ X ] First block spawned
+- [ X ] Setup text output
+- [ X ] Setup animations
 - [   ] Setup arrows
 - [   ] Fill in algorithms
 - [   ] Add stats summaries

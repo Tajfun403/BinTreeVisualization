@@ -47,6 +47,8 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
 
     void OnInsert(object sender, RoutedEventArgs e)
     {
+        if (string.IsNullOrEmpty(OperationArgument))
+            return;
         BinTree.Insert(double.Parse(OperationArgument));
     }
 

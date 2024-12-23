@@ -46,7 +46,7 @@
             <Button Content="Find min" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="4"/>
             <Button Content="Find max" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="5"/>
         </Grid>
-        <local:BinTreeControl x:Name="TreeNode" VerticalAlignment="Top" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="0"/>
+        <local:BinTreeControl x:Name="TreeNode" Grid.Row="1" Grid.Column="0"/>
     </Grid>
 
 </Page>
