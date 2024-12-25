@@ -90,7 +90,6 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             n.Deactivate();
         }
 
-
         var it = Root;
         await Blink(it);
         SetText($"Traversing to the rightmost node");
@@ -193,7 +192,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         SetText($"Comparing {value} to {currNode.Value}");
         await Delay(500);
 
-        bool bGoLeft = value.CompareTo(currNode.Value) < 0;
+        bool bGoLeft = value < currNode;
         string s = bGoLeft ? $"{value} is smaller; inserting into left subtree" :
                      $"{value} is larger; inserting into right subtree";
         SetText(s);
@@ -221,7 +220,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         currNode.Deactivate();
         SetText($"Non-empty leaf; going deeper", TextAction.Blink);
         var nextNode = bGoLeft ? currNode.Left : currNode.Right;
-        nextNode.BlinkSubtree();
+        nextNode.Blink(true);
         await Delay(1000);
         var ret = await Insert(value, bGoLeft ? currNode.Left : currNode.Right);
 
@@ -231,7 +230,6 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await ResetText();
         // SetText($"Inserted into subtree, rebalacing");
 
-        // currNode.Activate();
         await BalanceTreeIfNeeded(currNode);
 
         return ret;
@@ -240,6 +238,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     private async Task BalanceTreeIfNeeded(Node<T> currNode)
     {
         var nodeBalance = currNode.GetNodeBalance();
+        SetText($"Subtree balance: {nodeBalance}");
+        await Delay(1000);
+
         if (nodeBalance > 1)
         {
             SetText($"Left subtree is too high; rotating right");

@@ -159,8 +159,6 @@ public class Node<T> where T : IComparable<T>
         return (Left?.GetHeight() ?? 0) - (Right?.GetHeight() ?? 0);
     }
 
-   
-
     /// <summary>
     /// Get the node at a relative position to the right from the current node, as if all nodes on this level were taken.<para/>
     /// Returns null if the spot at this location is empty.
@@ -239,6 +237,18 @@ public class Node<T> where T : IComparable<T>
     }
 
     /// <summary>
+    /// Blink the node's UI control in blue
+    /// </summary>
+    /// <param name="bRecursive">Whether to blink the node itself, or the node and all its children as well</param>
+    public void Blink(bool bRecursive = false)
+    {
+        if (bRecursive)
+            Traverse().ToList().ForEach(x => x.Blink());
+        else
+            BackingControl.Blink();
+    }
+
+    /// <summary>
     /// Move the associated node control to a location and make its all its children follow it.
     /// </summary>
     /// <param name="loc"></param>
@@ -293,18 +303,6 @@ public class Node<T> where T : IComparable<T>
         storyboard.Begin();
     }
 
-    public void BlinkSubtree()
-    {
-        BackingControl.Blink();
-        Left?.BlinkSubtree();
-        Right?.BlinkSubtree();
-    }
-
-    public void Blink()
-    {
-        BackingControl.Blink();
-    }
-
     /// <summary>
     /// Traverse the tree in Level Order Traversal
     /// </summary>
@@ -351,5 +349,21 @@ public class Node<T> where T : IComparable<T>
     /// <param name="other"></param>
     /// <returns>Whether the value of left is bigger than the value of right</returns>
     public static bool operator >(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) > 0;
+
+    /// <summary>
+    /// Compare nodes value-wise
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="other"></param>
+    /// <returns>Whether the value of left is smaller than the value of right</returns>
+    public static bool operator <(T self, Node<T> other) => self.CompareTo(other.Value) < 0;
+
+    /// <summary>
+    /// Compare nodes value-wise
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="other"></param>    
+    /// /// <returns>Whether the value of left is smaller than the value of right</returns>
+    public static bool operator >(T self, Node<T> other) => self.CompareTo(other.Value) > 0;
 
 }
