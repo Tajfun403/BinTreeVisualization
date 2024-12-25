@@ -113,7 +113,6 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         if (Root == null)
         {
             CreateRoot(value);
-            IsOperationInProgress = false;
         }
         else
         {
@@ -130,6 +129,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             await Delay(2000);
             await ResetText();
         }
+        FinishOperation();
     }
 
     private bool bSkipAnimations = false;
@@ -155,34 +155,52 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await Task.Delay(ms);
     }
 
+    SemaphoreSlim operationSem = new(1, 1);
+    int currWaiting = 0;
+    int currInside = 0;
+
     /// <summary>
-    /// Ensures only one operation is being performed at a time
+    /// Instantly finish current operation, if any is active.
+    /// </summary>
+    public async void FinishCurrOperation()
+    {
+        await OperationGuard();
+        FinishOperation();
+    }
+
+    /// <summary>
+    /// Ensures only one operation is being performed at a time.<para/>
+    /// If one is already being performed when this func is called, try to skip all of its delays and wait for it to finish.
     /// </summary>
     /// <returns></returns>
     private async Task OperationGuard()
     {
-        if (IsOperationInProgress)
+        if (!operationSem.Wait(0))
         {
+            Debug.WriteLine("Operation in progress, waiting");
             bSkipAnimations = true;
-
-            var tcs = new TaskCompletionSource<bool>();
-
-            PropertyChangedEventHandler handler = null;
-            handler = (sender, args) =>
-            {
-                if (args.PropertyName == nameof(IsOperationInProgress))
-                {
-                    tcs.SetResult(true);
-                    PropertyChanged -= handler;
-                }
-            };
-
-            PropertyChanged += handler;
-            await tcs.Task;
-            bSkipAnimations = false;
+            currWaiting++;
+            Debug.WriteLine($"Curr waiting {currWaiting}");
+            await operationSem.WaitAsync();
+            currWaiting--;
+            Debug.WriteLine($"Curr waiting {currWaiting}");
+            Debug.WriteLine("Entering operation");
         }
-        bSkipAnimations = false;
-        IsOperationInProgress = true;
+        if (currWaiting == 0)
+            bSkipAnimations = false;
+        currInside++;
+        Debug.Assert(currInside == 1, "More than one task performing actions!");
+    }
+
+    /// <summary>
+    /// Signal that an operation is finished and another one can be started.
+    /// </summary>
+    private void FinishOperation()
+    {
+        operationSem.Release();
+        currInside--;
+        Debug.Assert(currInside == 0, "More than one task performing actions!");
+        Debug.Assert(operationSem.CurrentCount <= 1);
     }
 
     public async Task<Node<T>> Insert(T value, Node<T> currNode)
@@ -308,8 +326,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         else
             Debug.Assert(false, "Invalid tree state!");
 
-        parent?.OrphanChildren(true, false);
-        topChild.OrphanChildren(true, false);
+        topChild.DetachFromParent();
+        middleChild.DetachFromParent();
+
+        // parent?.OrphanChildren(true, false);
+        // topChild.OrphanChildren(true, false);
 
         SetText($"Rotating right around pivot {middleChild.Value}", TextAction.Violet);
 
@@ -321,7 +342,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
 
         if (bMiddleChildSwapped)
         {
-            bottomChild.OrphanChildren(false, true);
+            bottomChild.DetachFromParent();
+            // bottomChild.OrphanChildren(false, true);
             await AnimAdoption(middleChild, bottomChild);
             // middleChild.AdoptChild(bottomChild);
         }
@@ -365,8 +387,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         else
             Debug.Assert(false, "Invalid tree state!");
 
-        parent?.OrphanChildren(false, true);
-        topChild.OrphanChildren(false, true);
+        topChild.DetachFromParent();
+        middleChild.DetachFromParent();
+
+        // parent?.OrphanChildren(false, true);
+        // topChild.OrphanChildren(false, true);
 
         SetText($"Rotating left around pivot {middleChild.Value}", TextAction.Violet);
 
@@ -377,7 +402,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
 
         if (bMiddleChildSwapped)
         {
-            bottomChild.OrphanChildren(true, false);
+            bottomChild.DetachFromParent();
+            // bottomChild.OrphanChildren(true, false);
             await AnimAdoption(middleChild, bottomChild);
             // middleChild.AdoptChild(bottomChild);
         }
@@ -396,14 +422,21 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         return middleChild;
     }
 
+    /// <inheritdoc cref="BinTreeControl.SetText(string, TextAction)"/>
     private void SetText(string text, TextAction act = TextAction.Base)
     {
         BackingControl.SetText(text, act);
     }
 
+    /// <summary>
+    /// Reset all current progress texts.<para />
+    /// If any texts are currently present, they will be despawned in a 200ms long animation.<para />
+    /// If empty, returns immediately.
+    /// </summary>
+    /// <returns></returns>
     private async Task ResetText()
     {
-        await BackingControl.ResetText();
+        await Delay(BackingControl.ResetText() ? 200 : 0);
     }
 
     private void LayoutTree()
@@ -412,6 +445,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         // BackingControl.LayoutTreeNSquare(this);
     }
 
+    /// <inheritdoc cref="Node{T}.Traverse"/>
     IEnumerable<Node<T>> Traverse()
     {
         return Root?.Traverse() ?? [];
@@ -485,4 +519,4 @@ public static class TextActionColors
     }
 }
 
-public record struct BinTreeRow<T>(int tier, List<Node<T>> nodes) where T : IComparable<T>;
+public record struct BinTreeRow<T>(int Tier, List<Node<T>> Nodes) where T : IComparable<T>;

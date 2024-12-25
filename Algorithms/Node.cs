@@ -91,6 +91,8 @@ public class Node<T> where T : IComparable<T>
         if (node is null)
             return null;
 
+        Debug.Assert(node != this, "Tried to adopt itself as a child");
+
         Debug.WriteLine($"Setting parent of {{{node}}} to {{{this}}}");
         node.Parent = this;
         bool bLeft = node < this;
@@ -101,6 +103,11 @@ public class Node<T> where T : IComparable<T>
         if (bLeft)
         {
             // Debug.Assert(Left is null, "Tried to adopt a left child but this slot is already taken!");
+            if (Left == node)
+            {
+                Debug.WriteLine("Tried to adopt its own child");
+                return this;
+            }
             if (Left != null)
             {
                 Debug.WriteLine("Forced adoption");
@@ -115,6 +122,11 @@ public class Node<T> where T : IComparable<T>
         }
         else
         {
+            if (Right == node)
+            {
+                Debug.WriteLine("Tried to adopt its own child");
+                return this;
+            }
             // Debug.Assert(Right is null, "Tried to adopt a right child but this slot is already taken!");
             if (Right != null)
             {
@@ -136,6 +148,17 @@ public class Node<T> where T : IComparable<T>
             Left = null;
         if (OrphanRightChild)
             Right = null;
+    }
+
+    public void DetachFromParent()
+    {
+        if (Parent is null)
+            return;
+        if (Parent.Left == this)
+            Parent.Left = null;
+        else if (Parent.Right == this)
+            Parent.Right = null;
+        Parent = null;
     }
 
     public int GetDepth()

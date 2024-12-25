@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -50,7 +51,10 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
     {
         if (string.IsNullOrEmpty(OperationArgument))
             return;
-        BinTree.Insert(double.Parse(OperationArgument));
+        if (double.TryParse(OperationArgument, out double arg))
+            BinTree.Insert(arg);
+        else
+            Debug.WriteLine($"Invalid input of {OperationArgument}");
 
         lastOperation = OnInsert;
     }
@@ -80,7 +84,11 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
     {
         if (e.Key == Key.Enter)
         {
-            lastOperation?.Invoke(sender, new RoutedEventArgs());
+            lastOperation?.Invoke(sender, new());
+        }
+        else if (e.Key == Key.Escape)
+        {
+            BinTree.FinishCurrOperation();
         }
     }
 }

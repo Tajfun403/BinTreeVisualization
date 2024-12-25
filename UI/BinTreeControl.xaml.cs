@@ -46,26 +46,18 @@ public partial class BinTreeControl : UserControl
     /// If any texts are currently present, they will be despawned in a 200ms long animation.<para />
     /// If empty, returns immediately.
     /// </summary>
-    /// <returns></returns>
-    public async Task ResetText()
+    /// <returns>True if any texts were hidden, false otherwise</returns>
+    public bool ResetText()
     {
-        var LabelsContainer = ProgressStackPanel.Children;
+        var LabelsContainer = ProgressStackPanel.Children.OfType<ProgressLabel>().ToList();
         if (LabelsContainer.Count == 0)
-            return;
+            return true;
 
-        foreach (var item in LabelsContainer)
-        {
-            if (item is ProgressLabel item2)
-            {
-                item2.TriggerDespawnAnim();
-            }
-        }
-
-        await Task.Delay(200);
+        LabelsContainer.ForEach(x => x.TriggerDespawnAnim());
 
         ProgressStackPanel.Children.Clear();
+        return false;
     }
-
 
     /// <summary>
     /// Auto layout the tree, allocating double the space for every next row. Does not account for empty branches.
@@ -83,11 +75,11 @@ public partial class BinTreeControl : UserControl
         {
             if (curr is null)
                 return;
-            int height = curr.GetDepth();
+            int depth = curr.GetDepth();
             var currLoc = curr.DesiredLoc;
             double baseLeft = currLoc.X;
             double Y = currLoc.Y + Node<T>.ToBottomOffset;
-            double offset = distanceBetweenNodesOnHeight(height);
+            double offset = distanceBetweenNodesOnHeight(depth);
             curr.Right?.MoveToLoc(new((baseLeft + offset), Y));
             curr.Left?.MoveToLoc(new((baseLeft - offset), Y));
             Debug.WriteLine($"Node {curr.Value} moved to {baseLeft}, {Y}");
