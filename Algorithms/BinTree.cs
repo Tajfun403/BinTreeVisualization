@@ -110,6 +110,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     public async void Insert(T value)
     {
         await OperationGuard();
+        Debug.WriteLine($"Inserting {value}");
         if (Root == null)
         {
             CreateRoot(value);
@@ -227,29 +228,32 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
 
         // return ret;
 
+        await ResetText();
         // SetText($"Inserted into subtree, rebalacing");
 
         // currNode.Activate();
-        if (bGoLeft)
-        {
-            if (currNode.GetNodeBalance() > 1)
-            {
-                SetText($"Left subtree is too high; rotating right");
-                currNode = RotateRight(currNode);
-                await Delay(1000);
-            }
-        }
-        else
-        {
-            if (currNode.GetNodeBalance() < -1)
-            {
-                SetText($"Right subtree is too high; rotating left");
-                currNode = RotateLeft(currNode);
-                await Delay(1000);
-            }
-        }
+        await BalanceTreeIfNeeded(currNode);
 
         return ret;
+    }
+
+    private async Task BalanceTreeIfNeeded(Node<T> currNode)
+    {
+        var nodeBalance = currNode.GetNodeBalance();
+        if (nodeBalance > 1)
+        {
+            SetText($"Left subtree is too high; rotating right");
+            currNode = await RotateRight(currNode);
+            await Delay(1000);
+        }
+
+        else if (nodeBalance < -1)
+        {
+            SetText($"Right subtree is too high; rotating left");
+            currNode = await RotateLeft(currNode);
+            await Delay(1000);
+        }
+
     }
 
     /// <summary>
@@ -257,7 +261,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// </summary>
     /// <param name="currNode"></param>
     /// <returns></returns>
-    private Node<T> RotateRight(Node<T> currNode)
+    private async Task<Node<T>> RotateRight(Node<T> currNode)
     {
         // left-heavy tree
         var parent = currNode.Parent;
@@ -275,16 +279,24 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         // 1 -> 2 -> 2.5, forming left-right leaves
         else if (currNode.Left.Right is not null)
         {
-            bottomChild = currNode.Left.Right;
-            middleChild = currNode.Left;
+            middleChild = currNode.Left.Right;
+            bottomChild = currNode.Left;
         }
         else
             Debug.Assert(false, "Invalid tree state!");
 
-        topChild.OrphanChildren();
-        middleChild.AdoptChild(topChild);
         parent?.OrphanChildren(true, false);
-        parent?.AdoptChild(middleChild);
+        topChild.OrphanChildren(true, false);
+
+        SetText($"Rotating right around pivot {middleChild.Value}", TextAction.Violet);
+
+        await AnimAdoption(middleChild, topChild);
+        // middleChild.AdoptChild(topChild);
+        if (parent != null)
+            await AnimAdoption(parent, middleChild);
+        // parent?.AdoptChild(middleChild);
+
+        middleChild.Parent = parent;
         // middleChild.AdoptChild(bottomChild);
 
         if (topChild == Root)
@@ -294,12 +306,69 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             Root.MoveTreeToLoc(new(0, 0));
         }
 
-        return topChild;
+        return middleChild;
     }
 
-    private Node<T> RotateLeft(Node<T> currNode)
+    private async Task AnimAdoption(Node<T> parent, Node<T> child)
     {
-        throw new NotImplementedException();
+        SetText($"{parent.Value} adopts {child.Value}");
+        SetText($"Parent is {parent.Value}", TextAction.Violet);
+        SetText($"Child is {child.Value}", TextAction.Blink);
+        parent.Activate();
+        child.ActivateBlue(true);
+        await Delay(1500);
+        parent.AdoptChild(child);
+        await Delay(1500);
+        parent.Deactivate();
+        child.DeactivateBlue(true);
+        await ResetText();
+    }
+
+    private async Task<Node<T>> RotateLeft(Node<T> currNode)
+    {
+        // right-heavy tree
+        var parent = currNode.Parent;
+        Node<T> topChild = currNode;
+        Node<T> middleChild = null;
+        Node<T> bottomChild = null;
+
+        // 3 -> 2 -> 1, forming all right leaves
+        if (currNode.Right.Right is not null)
+        {
+            middleChild = currNode.Right;
+            bottomChild = currNode.Right.Right;
+        }
+        // 3 -> 2 -> 2.5, forming right-left leaves
+        else if (currNode.Right.Left is not null)
+        {
+            middleChild = currNode.Right.Left;
+            bottomChild = currNode.Right;
+        }
+        else
+            Debug.Assert(false, "Invalid tree state!");
+
+        parent?.OrphanChildren(false, true);
+        topChild.OrphanChildren(false, true);
+
+        SetText($"Rotating left around pivot {middleChild.Value}", TextAction.Violet);
+
+        await AnimAdoption(middleChild, topChild);
+        // middleChild.AdoptChild(topChild);
+        if (parent != null)
+            await AnimAdoption(parent, middleChild);
+
+        // parent?.AdoptChild(middleChild);
+
+        middleChild.Parent = parent;
+
+        if (topChild == Root)
+        {
+            Root = middleChild;
+            Debug.WriteLine("Moving root");
+            Root.MoveTreeToLoc(new(0, 0));
+        }
+
+        return middleChild;
     }
 
     private void SetText(string text, TextAction act = TextAction.Base)

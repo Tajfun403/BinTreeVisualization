@@ -88,24 +88,44 @@ public class Node<T> where T : IComparable<T>
 
     public Node<T> AdoptChild(Node<T> node)
     {
+        if (node is null)
+            return null;
+
+        Debug.WriteLine($"Setting parent of {{{node}}} to {{{this}}}");
         node.Parent = this;
-        bool bLeft = node.Value.CompareTo(Value) < 0;
+        bool bLeft = node < this;
+
+        Debug.WriteLine($"Adoption: {{{this}}} adopting {{{node}}} as its {(bLeft ? "left" : "right")} child");
 
         Point expectedLoc;
         if (bLeft)
         {
-            Debug.Assert(Left is null, "Tried to adopt a left child but this slot is already taken!");
+            // Debug.Assert(Left is null, "Tried to adopt a left child but this slot is already taken!");
+            if (Left != null)
+            {
+                Debug.WriteLine("Forced adoption");
+                node.AdoptChild(Left);
+            }
             Left = node;
+
+            /*var oldLeft = Left;
+            Left = node;
+            node.AdoptChild(oldLeft);*/
             expectedLoc = new Point(DesiredLoc.X - ToSideOffset, DesiredLoc.Y + ToBottomOffset);
         }
         else
         {
-            Debug.Assert(Right is null, "Tried to adopt a right child but this slot is already taken!");
+            // Debug.Assert(Right is null, "Tried to adopt a right child but this slot is already taken!");
+            if (Right != null)
+            {
+                Debug.WriteLine("Forced adoption");
+                node.AdoptChild(Right);
+            }
             Right = node;
+
             expectedLoc = new Point(DesiredLoc.X + ToSideOffset, DesiredLoc.Y + ToBottomOffset);
         }
         node.MoveTreeToLoc(expectedLoc);
-        Debug.WriteLine($"{{{this}}} adopted {{{node}}} as its {(bLeft ? "left" : "right")} child");
 
         return node;
     }
@@ -191,6 +211,31 @@ public class Node<T> where T : IComparable<T>
     public void Deactivate()
     {
         BackingControl.Deactivate();
+    }
+
+    public void HighlightBlue()
+    {
+        BackingControl.HighlightBlue();
+    }
+
+    public void ActivateBlue(bool bRecursive = false)
+    {
+        if (bRecursive)
+        {
+            Traverse().ToList().ForEach(x => x.ActivateBlue());
+        }
+        else
+            BackingControl.ActivateBlue();
+    }
+
+    public void DeactivateBlue(bool bRecursive = false)
+    {
+        if (bRecursive)
+        {
+            Traverse().ToList().ForEach(x => x.DeactivateBlue());
+        }
+        else
+            BackingControl.DeactivateBlue();
     }
 
     /// <summary>
@@ -290,5 +335,21 @@ public class Node<T> where T : IComparable<T>
             parts.Add("no children");
         return String.Join("; ", parts);
     }
+
+    /// <summary>
+    /// Compare nodes value-wise
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="other"></param>
+    /// <returns>Whether the value of left is smaller than the value of right</returns>
+    public static bool operator <(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) < 0;
+
+    /// <summary>
+    /// Compare nodes value-wise
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="other"></param>
+    /// <returns>Whether the value of left is bigger than the value of right</returns>
+    public static bool operator >(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) > 0;
 
 }

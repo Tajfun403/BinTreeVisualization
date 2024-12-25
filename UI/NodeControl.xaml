@@ -31,6 +31,24 @@
                 Storyboard.TargetProperty="Stroke.Color"
                 From="{StaticResource StrokeBase}" To="{StaticResource StrokeBlue}" Duration="0:0:.5" AutoReverse="True" />
         </Storyboard>
+        <Storyboard x:Key="AnimHighlightBlue">
+            <ColorAnimation 
+                Storyboard.TargetName="BgEllipse"
+                Storyboard.TargetProperty="Fill.Color"
+                From="{StaticResource InactiveColor}" To="{StaticResource StrokeBlue}" Duration="0:0:.5" AutoReverse="True" />
+        </Storyboard>
+        <Storyboard x:Key="AnimActivateBlue">
+            <ColorAnimation 
+                Storyboard.TargetName="BgEllipse"
+                Storyboard.TargetProperty="Fill.Color"
+                From="{StaticResource InactiveColor}" To="{StaticResource StrokeBlue}" Duration="0:0:.5" AutoReverse="False" />
+        </Storyboard>
+        <Storyboard x:Key="AnimDeactivateBlue">
+            <ColorAnimation 
+                Storyboard.TargetName="BgEllipse"
+                Storyboard.TargetProperty="Fill.Color"
+                From="{StaticResource StrokeBlue}" To="{StaticResource InactiveColor}" Duration="0:0:.5" AutoReverse="False" />
+        </Storyboard>
     </UserControl.Resources>
     <Grid>
         <Ellipse Name="BgEllipse" Stroke="#EEE" VerticalAlignment="Center" HorizontalAlignment="Center" StrokeThickness="3" Width="120" Height="70">

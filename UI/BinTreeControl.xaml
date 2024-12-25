@@ -14,7 +14,7 @@
                              HorizontalAlignment="Center"
                              VerticalAlignment="Top">
         </Canvas>
-        <StackPanel Name="ProgressStackPanel" Panel.ZIndex="1000" Canvas.Top="0" Canvas.Right="0" HorizontalAlignment="Right" VerticalAlignment="Top"  Width="400" Height="200"
+        <StackPanel Name="ProgressStackPanel" Panel.ZIndex="1000" Canvas.Top="0" Canvas.Right="0" HorizontalAlignment="Right" VerticalAlignment="Top"  Width="400" Height="250"
                     >
             <local:ProgressLabel Content="test"></local:ProgressLabel>
         </StackPanel>

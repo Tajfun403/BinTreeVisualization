@@ -61,6 +61,21 @@ namespace BinTreeVisualization.UI
             BeginStoryboard((Storyboard)FindResource("AnimBlink"));
         }
 
+        public void HighlightBlue()
+        {
+            BeginStoryboard((Storyboard)FindResource("AnimHighlightBlue"));
+        }
+
+        public void DeactivateBlue()
+        {
+            BeginStoryboard((Storyboard)FindResource("AnimDeactivateBlue"));
+        }
+
+        public void ActivateBlue()
+        {
+            BeginStoryboard((Storyboard)FindResource("AnimActivateBlue"));
+        }
+
         public object Value
         {
             get;
