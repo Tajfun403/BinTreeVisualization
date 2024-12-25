@@ -43,6 +43,7 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
             BackingControl = this.TreeNode
         };
         DataContext = this;
+        lastOperation = OnInsert;
     }
 
     void OnInsert(object sender, RoutedEventArgs e)
@@ -50,6 +51,20 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         if (string.IsNullOrEmpty(OperationArgument))
             return;
         BinTree.Insert(double.Parse(OperationArgument));
+
+        lastOperation = OnInsert;
+    }
+
+    void OnGetMin(object sender, RoutedEventArgs e)
+    {
+        BinTree.GetMin();
+        lastOperation = OnGetMin;
+    }
+
+    void OnGetMax(object sender, RoutedEventArgs e)
+    {
+        BinTree.GetMax();
+        lastOperation = OnGetMax;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -57,6 +72,16 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    Action<object, RoutedEventArgs> lastOperation;
+
+    private void OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            lastOperation?.Invoke(sender, new RoutedEventArgs());
+        }
     }
 }
 

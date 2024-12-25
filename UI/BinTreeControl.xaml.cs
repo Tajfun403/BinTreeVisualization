@@ -106,8 +106,8 @@ public partial class BinTreeControl : UserControl
     /// <param name="tree"></param>
     public void LayoutTree<T>(BinTree<T> tree) where T : IComparable<T>
     {
-        float nodeWidth = Node<T>.ToSideOffset; // Fixed horizontal spacing
-        float levelHeight = Node<T>.ToBottomOffset; // Fixed vertical spacing
+        float nodeWidth = Node<T>.ToSideOffset;
+        float levelHeight = Node<T>.ToBottomOffset;
 
         // Helper function to calculate positions and bounds of subtrees
         // This will also return the width of the subtree for dynamic layout
@@ -120,7 +120,6 @@ public partial class BinTreeControl : UserControl
             float leftBound = x, rightBound = x;
             float leftWidth = 0, rightWidth = 0;
 
-            // Traverse left subtree if it exists
             if (curr.Left != null)
             {
                 var (leftLeft, leftRight, leftSubtreeWidth) = Traverse(
@@ -132,7 +131,6 @@ public partial class BinTreeControl : UserControl
                 leftWidth = leftSubtreeWidth;
             }
 
-            // Traverse right subtree if it exists
             if (curr.Right != null)
             {
                 var (rightLeft, rightRight, rightSubtreeWidth) = Traverse(
@@ -168,4 +166,5 @@ public partial class BinTreeControl : UserControl
 
        Traverse(tree.Root, 0, 0); // Start with the root at (0, 0)
     }
+
 }

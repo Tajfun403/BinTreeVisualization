@@ -38,13 +38,14 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBox Name="InputTextBox" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Width="120" Grid.Column="0"
-                     Text="{Binding OperationArgument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox Name="InputTextBox" KeyDown="OnKeyDown" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Width="200" Grid.Column="0"
+                     Text="{Binding OperationArgument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     FontSize="20"/>
             <Button Content="Insert item" Click="OnInsert" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"/>
             <Button Content="Find item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2"/>
             <Button Content="Delete item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="3"/>
-            <Button Content="Find min" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="4"/>
-            <Button Content="Find max" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="5"/>
+            <Button Content="Find min" Click="OnGetMin" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="4"/>
+            <Button Content="Find max" Click="OnGetMax" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="5"/>
         </Grid>
         <local:BinTreeControl x:Name="TreeNode" Grid.Row="1" Grid.Column="0"/>
     </Grid>

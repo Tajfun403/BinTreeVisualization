@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:BinTreeVisualization.UI"
              mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="200"
+             d:DesignHeight="70" d:DesignWidth="120"
          >
     <UserControl.Resources>
         <Color x:Key="ActiveColor">#b077e0</Color>
@@ -33,7 +33,7 @@
         </Storyboard>
     </UserControl.Resources>
     <Grid>
-        <Ellipse Name="BgEllipse" Stroke="#EEE" StrokeThickness="3" Width="200" Height="100">
+        <Ellipse Name="BgEllipse" Stroke="#EEE" VerticalAlignment="Center" HorizontalAlignment="Center" StrokeThickness="3" Width="120" Height="70">
             <Ellipse.Fill>
                 <SolidColorBrush x:Name="BgBrush" Color="#333" />
             </Ellipse.Fill>
@@ -41,6 +41,6 @@
         <Label Content="{Binding ValToStr, UpdateSourceTrigger=PropertyChanged}"
              VerticalAlignment="Center" HorizontalAlignment="Center"
              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
-                 Width="200" Height="100" />
+                 Width="120" Height="70" />
     </Grid>
 </UserControl>
