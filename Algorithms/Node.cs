@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,49 +23,122 @@ public class Node<T> where T : IComparable<T>
     /// </summary>
     public NodeControl BackingControl { get; set; }
     private BinTree<T> tree;
-    public Node<T> Parent { get; set; } = null;
 
+    /// <summary>
+    /// The node's parent.
+    /// </summary>
+    public Node<T> Parent
+    {
+        get;
+        set
+        {
+            field = value;
+            RefreshSelfArrow();
+        }
+    }
+        = null;
+
+    /// <summary>
+    /// The node's value
+    /// </summary>
     public T Value { get; init; }
 
-    public Node<T> Left { get; set; } = null;
-    public Node<T> Right { get; set; } = null;
+    /// <summary>
+    /// The left child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference./>
+    /// </summary>
+    public Node<T> Left { get; private set; } = null;
 
+    /// <summary>
+    /// The right child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference./>
+    /// </summary>
+    public Node<T> Right { get; private set; } = null;
+
+    // public NodeArrow LeftArrow { get; set; } = null;
+    // public NodeArrow RightArrow { get; set; } = null;
+    public NodeArrow SelfArrow { get; set; } = null;
+
+    /// <summary>
+    /// Internal ctor. Use static method <see cref="CreateRoot{T}(T, BinTree{T})"/> to create a new tree, or <see cref="SpawnChild(T, bool)"/> to spawn a new node.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="tree"></param>
     private Node(T value, BinTree<T> tree)
     {
         Value = value;
         this.tree = tree;
     }
 
+    /// <summary>
+    /// Refresh the arrow pointing to this node to account for changes in parents
+    /// </summary>
+    public void RefreshSelfArrow()
+    {
+        if (Parent is null)
+        {
+            SelfArrow?.RemoveSelf();
+            SelfArrow = null;
+            return;
+        }
+        else if (SelfArrow is null)
+        {
+            SelfArrow = Parent.CreateArrowTo(this);
+        }
+        SelfArrow?.MoveTargetToLoc(DesiredLoc);
+        SelfArrow?.MoveSourceToLoc(Parent.DesiredLoc);
+    }
+
+    /// <summary>
+    /// Spawn a new node as child of this node. This is the only way to spawn new nodes.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="bLeft"></param>
+    /// <returns></returns>
     public Node<T> SpawnChild(T value, bool bLeft)
     {
         var node = new Node<T>(value, tree);
         node.Parent = this;
         var UIControl = CreateUIElem(value, bLeft);
         node.BackingControl = UIControl;
-        if (bLeft)
-            Left = node;
-        else
-            Right = node;
-        node.Activate();
         node.DesiredLoc = GetLocOf(UIControl);
+        if (bLeft)
+        {
+            Left = node;
+            node.RefreshSelfArrow();
+        }
+        else
+        {
+            Right = node; 
+            node.RefreshSelfArrow();
+        }
+        node.Activate();
+
         return node;
     }
 
     public const int ToBottomOffset = 70;
     // public const int ToSideOffset = 150;
     public const int ToSideOffset = 100;
+    public double CurrWidth => BackingControl.Width;
+    public double CurrHeight => BackingControl.Height;
+    public const double NodeWidth = 120;
+    public const double NodeHeight = 70;
     public Point DesiredLoc { get; set; }
     public Point CurrLoc => GetLocOf(BackingControl);
 
     public Point GetLocOf(NodeControl control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
 
+    /// <summary>
+    /// Create a root node to start a new tree.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="value"></param>
+    /// <param name="parent"></param>
+    /// <returns></returns>
     public static Node<T> CreateRoot<T>(T value, BinTree<T> parent) where T : IComparable<T>
     {
         NodeControl el = new(value);
         Node<T> newNode = new(value, parent);
         newNode.BackingControl = el;
-        el.VerticalAlignment = VerticalAlignment.Top;
-        el.HorizontalAlignment = HorizontalAlignment.Center;
         Canvas.SetLeft(el, 0);
         Canvas.SetTop(el, 0);
         newNode.DesiredLoc = new(0, 0);
@@ -78,12 +152,23 @@ public class Node<T> where T : IComparable<T>
         NodeControl el = new(value);
         Point oldLoc = DesiredLoc;
         Point newLoc = new(oldLoc.X + (bLeft ? -ToSideOffset : ToSideOffset), oldLoc.Y + ToBottomOffset);
-        el.VerticalAlignment = VerticalAlignment.Top;
-        el.HorizontalAlignment = HorizontalAlignment.Center;
         Canvas.SetLeft(el, newLoc.X);
         Canvas.SetTop(el, newLoc.Y);
         tree.GetCanvas().Children.Add(el);
         return el;
+    }
+
+    private NodeArrow CreateArrowTo(Node<T> node)
+    {
+        NodeArrow arrow = new();
+        arrow.Target = node.DesiredLoc;
+        arrow.Source = this.DesiredLoc;
+
+        Canvas.SetLeft(arrow, this.DesiredLoc.X);
+        Canvas.SetTop(arrow, this.DesiredLoc.Y);
+
+        tree.GetCanvas().Children.Add(arrow);
+        return arrow;
     }
 
     public Node<T> AdoptChild(Node<T> node)
@@ -138,6 +223,7 @@ public class Node<T> where T : IComparable<T>
             expectedLoc = new Point(DesiredLoc.X + ToSideOffset, DesiredLoc.Y + ToBottomOffset);
         }
         node.MoveTreeToLoc(expectedLoc);
+        node.RefreshSelfArrow();
 
         return node;
     }
@@ -294,36 +380,15 @@ public class Node<T> where T : IComparable<T>
     /// <summary>
     /// Move the associated node control to specified location over 0.5 seconds
     /// </summary>
-    /// <param name="loc"></param>
+    /// <param name="loc">Location to move to</param>
     public void MoveToLoc(Point loc)
     {
         Debug.WriteLine($"Moving {this} from {DesiredLoc} to {loc}");
-        float dur = 0.5f;
-        DoubleAnimation xAnim = new()
-        {
-            To = loc.X,
-            Duration = TimeSpan.FromSeconds(dur)
-        };
-
-        DoubleAnimation yAnim = new()
-        {
-            To = loc.Y,
-            Duration = TimeSpan.FromSeconds(dur)
-        };
-
-        Storyboard storyboard = new();
-
-        Storyboard.SetTarget(xAnim, BackingControl);
-        Storyboard.SetTargetProperty(xAnim, new PropertyPath("(Canvas.Left)"));
-
-        Storyboard.SetTarget(yAnim, BackingControl);
-        Storyboard.SetTargetProperty(yAnim, new PropertyPath("(Canvas.Top)"));
-
-        storyboard.Children.Add(xAnim);
-        storyboard.Children.Add(yAnim);
-
         DesiredLoc = loc;
-        storyboard.Begin();
+        BackingControl.MoveToLoc(loc);
+        RefreshSelfArrow();
+        Left?.RefreshSelfArrow();
+        Right?.RefreshSelfArrow();
     }
 
     /// <summary>
