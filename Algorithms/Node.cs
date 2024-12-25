@@ -208,7 +208,7 @@ public class Node<T> where T : IComparable<T>
         bool bOverlapping = row.Any(n => Math.Abs(n.CurrLoc.X - CurrLoc.X) < ToSideOffset);
         if (!bOverlapping)
             return;
-        
+
         // overlapping
         if (bIntoRight)
         {
@@ -389,4 +389,62 @@ public class Node<T> where T : IComparable<T>
     /// /// <returns>Whether the value of left is smaller than the value of right</returns>
     public static bool operator >(T self, Node<T> other) => self.CompareTo(other.Value) > 0;
 
+    /// <summary>
+    /// Get or set a node by its side
+    /// </summary>
+    /// <param name="side"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    public Node<T> this[Side side]
+    {
+        get => side switch
+        {
+            Side.Left => Left,
+            Side.Right => Right,
+            _ => throw new ArgumentOutOfRangeException(nameof(side), side, null)
+        };
+
+        set
+        {
+            switch (side)
+            {
+                case Side.Left:
+                    Left = value;
+                    break;
+                case Side.Right:
+                    Right = value;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(side), side, null);
+            }
+        }
+    }
 }
+
+/// <summary>
+/// Represents a side of a binary tree node
+/// </summary>
+public enum Side
+{
+    Left,
+    Right
+}
+
+internal static class NodeExtension
+{
+    /// <summary>
+    /// Get the opposite side
+    /// </summary>
+    /// <param name="side">Current side</param>
+    /// <returns>The opposite side</returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    internal static Side Opposite(this Side side) => side switch
+    {
+        Side.Left => Side.Right,
+        Side.Right => Side.Left,
+        _ => throw new ArgumentOutOfRangeException(nameof(side), side, null)
+    };
+
+    internal static Side FromIsLeft(this Side side, bool bIsLeft) => bIsLeft ? Side.Left : Side.Right;
+}
+
