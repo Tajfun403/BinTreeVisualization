@@ -5,7 +5,27 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:BinTreeVisualization.UI"
              mc:Ignorable="d" 
-             d:DesignHeight="10" d:DesignWidth="100">
+             d:DesignHeight="10" d:DesignWidth="100"
+             Name="NodeArrowName">
+
+    <UserControl.Resources>
+        <Color x:Key="ActiveColor">#b077e0</Color>
+            <Color x:Key="InactiveColor">#333</Color>
+            <Color x:Key="StrokeBase">#EEE</Color>
+            <Color x:Key="StrokeBlue">#4395d4</Color>
+            <Storyboard x:Key="AnimSpawn">
+            <DoubleAnimation Storyboard.TargetName="NodeArrowName"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1"
+                             Duration="0:0:.2" />
+            </Storyboard>
+            <Storyboard x:Key="AnimDespawn">
+            <DoubleAnimation Storyboard.TargetName="NodeArrowName"
+                             Storyboard.TargetProperty="Opacity"
+                             From="1" To="0"
+                             Duration="0:0:.2" />
+            </Storyboard>
+    </UserControl.Resources>
     <!-- https://stackoverflow.com/a/68552890 -->
     <Canvas Width="100" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left">
         <Line X1="0" Y1="0" X2="90" Y2="0" Stroke="#aaa" StrokeThickness="6"/>

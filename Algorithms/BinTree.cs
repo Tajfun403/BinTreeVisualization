@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Xps;
 using BinTreeVisualization.UI;
 
 namespace BinTreeVisualization.Algorithms;
@@ -64,9 +66,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// </summary>
     /// <param name="value">The value to find</param>
     /// <returns></returns>
-    public bool Find(T value)
+    public async Task<Node<T>> Find(T value)
     {
-        return Find(value, Root);
+        return await Find(value, Root);
     }
 
     /// <summary>
@@ -75,28 +77,71 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <param name="value">The value to find.</param>
     /// <param name="currNode">Subtree to search for the node in currently.</param>
     /// <returns></returns>
-    public bool Find(T value, Node<T> currNode)
+    public async Task<Node<T>> Find(T value, Node<T> currNode)
     {
-        if (currNode is null)
-            return false;
-        if (currNode.Value.CompareTo(value) == 0)
-            return true;
-        if (value.CompareTo(currNode.Value) < 0)
-            return Find(value, currNode.Left);
-        else
-            return Find(value, currNode.Right);
-    }
+        await ResetText();
+        currNode.Activate();
+        SetText($"Comparing {value} to {currNode.Value}");
+        await Delay(500);
 
-    public async Task<T> GetMin()
-    {
-        async Task Blink(Node<T> n)
+        if (currNode.Value.CompareTo(value) == 0)
         {
-            n.Activate();
-            await Delay(500);
-            n.Deactivate();
+            SetText($"Found {value}", TextAction.Violet);
+            await Delay(2000);
+            await ResetText();
+            currNode.Deactivate();
+            return currNode;
         }
 
-        var it = Root;
+        bool bGoLeft = value < currNode;
+        string s = bGoLeft ? $"{value} is smaller; searching into left subtree" :
+                     $"{value} is larger; searching into right subtree";
+        SetText(s);
+        await Delay(1000);
+
+        currNode.Deactivate();
+        if ((bGoLeft && currNode.Left is null) || (!bGoLeft && currNode.Right is null))
+        {
+            SetText($"Couldn't find {value}", TextAction.Red);
+            await Delay(2000);
+            await ResetText();
+            return null!;
+        }
+
+        currNode.Deactivate();
+        SetText($"Non-empty leaf; going deeper", TextAction.Blink);
+        var nextNode = bGoLeft ? currNode.Left : currNode.Right;
+        nextNode.Blink(true);
+        await Delay(1000);
+        return await Find(value, bGoLeft ? currNode.Left : currNode.Right);
+    }
+
+    /// <summary>
+    /// Get minimum value in the tree.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<T> GetMin() => (await GetMin(Root)).Value;
+    /// <summary>
+    /// Get maximum value in the tree.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<T> GetMax() => (await GetMax(Root)).Value;
+
+    private async Task Blink(Node<T> n)
+    {
+        n.Activate();
+        await Delay(500);
+        n.Deactivate();
+    }
+
+    /// <summary>
+    /// Get minimum in the subtree starting by the specified node.
+    /// </summary>
+    /// <param name="treeBase"></param>
+    /// <returns></returns>
+    public async Task<Node<T>> GetMin(Node<T> treeBase)
+    {
+        var it = treeBase;
         await Blink(it);
         SetText($"Traversing to the leftmost node");
         while (it.Left != null)
@@ -109,19 +154,17 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await Delay(2000);
         await ResetText();
         it.Deactivate();
-        return it.Value;
+        return it;
     }
 
-    public async Task<T> GetMax()
+    /// <summary>
+    /// Get max in the subtree starting by the specified node.
+    /// </summary>
+    /// <param name="treeBase"></param>
+    /// <returns></returns>
+    public async Task<Node<T>> GetMax(Node<T> treeBase)
     {
-        async Task Blink(Node<T> n)
-        {
-            n.Activate();
-            await Delay(500);
-            n.Deactivate();
-        }
-
-        var it = Root;
+        var it = treeBase;
         await Blink(it);
         SetText($"Traversing to the rightmost node");
         while (it.Right != null)
@@ -134,7 +177,133 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await Delay(2000);
         await ResetText();
         it.Deactivate();
-        return it.Value;
+        return it;
+    }
+
+    /// <summary>
+    /// Delete node containing the specified value from the tree.
+    /// </summary>
+    /// <param name="value"></param>
+    public async void Delete(T value)
+    {
+        await OperationGuard();
+        Debug.WriteLine($"Deleting {value}");
+        if (Root is null)
+        {
+            Debug.WriteLine("Tree is empty");
+            FinishOperation();
+            return;
+        }
+        var victim = await Find(value);
+        if (victim != null)
+            await Delete(victim);
+        FinishOperation();
+    }
+
+    private void SwapNodes(Node<T> one, Node<T> other)
+    {
+        var oneParent = one.Parent;
+        var otherParent = other.Parent;
+
+        List<Node<T>> oneChildren = [one.Left, one.Right];
+        List<Node<T>> otherChildren = [other.Left, other.Right];
+
+        one.OrphanChildren();
+        other.OrphanChildren();
+
+        one.DetachFromParent();
+        other.DetachFromParent();
+
+        oneChildren.ForEach(x => other.AdoptChild(x));
+        otherChildren.ForEach(x => one.AdoptChild(x));
+
+        oneParent?.AdoptChild(other);
+        otherParent?.AdoptChild(one);
+
+        if (oneParent == null)
+        {
+            Root = other;
+            Root.MoveTreeToLoc(new(0, 0));
+        }
+        else if (otherParent == null)
+        {
+            Root = one;
+            Root.MoveTreeToLoc(new(0, 0));
+        }
+    }
+
+    /// <summary>
+    /// Delete specified node from the tree.<para/>
+    /// You can find the node first with <see cref="Find(T)"/>
+    /// </summary>
+    /// <param name="currNode">Node to delete</param>
+    /// <returns></returns>
+    public async Task Delete(Node<T> victim)
+    {
+        if (victim.Left is null && victim.Right is null)
+        {
+            SetText($"Deleting leaf {victim.Value}");
+
+            var victimsParentSquare = victim.Parent?.Parent;
+            var victimParent = victim.Parent;
+
+            await Delay(1000);
+            victim.Deactivate();
+            victim.DetachFromParent();
+            GetCanvas().Children.Remove(victim.BackingControl);
+
+            await ResetText();
+            if (victimParent != null)
+                await BalanceTreeIfNeeded(victimParent);
+            if (victimsParentSquare != null)
+                await BalanceTreeIfNeeded(victimsParentSquare);
+
+            return;
+        }
+
+        Node<T> successor = null;
+        if (victim.Right != null)
+            successor = await GetMin(victim.Right);
+        successor ??= victim.Left;
+
+        SwapNodes(victim, successor);
+
+        await Delete(victim);
+
+        return;
+
+        var successorParent = successor.Parent;
+        var succsParentsParent = successorParent?.Parent;
+
+        List<Node<T>> successorOldChildren = [successor.Left, successor.Right];
+        List<Node<T>> victimChildren = [victim.Left, victim.Right];
+        victim.OrphanChildren();
+
+        successor.OrphanChildren();
+        victimChildren.ForEach(x => successor.AdoptChild(x));
+
+        successor.DetachFromParent();
+        if (successorParent != null)
+            successorOldChildren.ForEach(x => successorParent.AdoptChild(x));
+        else if (successorOldChildren.Any(x => x != null))
+            Debug.Fail("Orhpanized children during removal!");
+
+        if (victimChildren.Any(x => x?.Parent is null))
+            Debug.Fail("Orhpanized children during removal!");
+
+        var victimsParent = victim.Parent;
+        victimsParent?.AdoptChild(successor);
+        await Delete(victim);
+    }
+
+    /// <summary>
+    /// Triggers debug break inside the tree.
+    /// </summary>
+    public void BreakInto()
+    {
+#if DEBUG
+        Debugger.Break();
+#endif
     }
 
     /// <summary>
@@ -169,7 +338,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     private bool bSkipAnimations { get; set; }
 
     /// <summary>
-    /// Delays the execution of the current task if in not-instant context.
+    /// Delays the execution of the current task if in not-instant context.<para/>
+    /// Otherwise, returns immediately.
     /// </summary>
     /// <param name="ms">Delay in miliseconds</param>
     /// <returns></returns>
@@ -180,9 +350,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await Task.Delay(ms);
     }
 
-    SemaphoreSlim operationSem = new(1, 1);
-    int currWaiting = 0;
-    int currInside = 0;
+    private SemaphoreSlim operationSem = new(1, 1);
+    private int currWaiting = 0;
+    private int currInside = 0;
 
     /// <summary>
     /// Instantly finish current operation, if any is active.
@@ -226,6 +396,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         currInside--;
         Debug.Assert(currInside == 0, "More than one task performing actions!");
         Debug.Assert(operationSem.CurrentCount <= 1);
+        AssertTreeIsValid();
     }
 
     /// <summary>
@@ -516,6 +687,28 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         return result;
     }
 
+    public void AssertTreeIsValid()
+    {
+        AssertNoOrphans();
+        AssertIsBinaryTree();
+    }
+    public void AssertNoOrphans()
+    {
+        var nodes = Traverse().Select(x => x.BackingControl).ToList();
+        var UINodes = GetCanvas().Children.OfType<NodeControl>().ToList();
+        HashSet<NodeControl> trackedNodes = new(nodes);
+        Debug.Assert(!UINodes.Any(x => !trackedNodes.Contains(x)), "Some nodes are not represented in the UI");
+    }
+    public void AssertIsBinaryTree()
+    {
+        foreach (var node in Traverse())
+        {
+            if (node.Left != null)
+                Debug.Assert(node.Left <= node, "Left child is larger than parent");
+            if (node.Right != null)
+                Debug.Assert(node.Right >= node, "Right child is smaller than parent");
+        }
+    }
 }
 
 /// <summary>
@@ -525,7 +718,8 @@ public enum TextAction
 {
     Base,
     Blink,
-    Violet
+    Violet,
+    Red
 }
 
 public static class TextActionColors
@@ -543,6 +737,7 @@ public static class TextActionColors
             TextAction.Base => NodeControl.StrokeBase,
             TextAction.Blink => NodeControl.StrokeBlue,
             TextAction.Violet => NodeControl.ActiveColor,
+            TextAction.Red => NodeControl.RedColor,
             _ => throw new NotImplementedException()
         };
     }

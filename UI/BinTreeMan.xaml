@@ -42,8 +42,8 @@
                      Text="{Binding OperationArgument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      FontSize="20"/>
             <Button Content="Insert item" Click="OnInsert" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"/>
-            <Button Content="Find item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2"/>
-            <Button Content="Delete item" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="3"/>
+            <Button Content="Find item" Click="OnFind" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2"/>
+            <Button Content="Delete item" Click="OnDelete" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="3"/>
             <Button Content="Find min" Click="OnGetMin" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="4"/>
             <Button Content="Find max" Click="OnGetMax" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="5"/>
         </Grid>

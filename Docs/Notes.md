@@ -13,8 +13,10 @@ Operations to support:
 - [ X ] Setup text output
 - [ X ] Setup animations
 - [ X ] Setup arrows
-- [   ] Fill in algorithms
-- [   ] Add stats summaries
+- [ X ] Fill in algorithms
+- [ X ] Add stats summaries
+- [   ] Add more UI controls
+- [   ] Add statistics on operation count
 
 # AVL tree in general
 A nice writeup on AVL trees: https://simpledevcode.wordpress.com/2014/09/16/avl-tree-in-c/

@@ -30,6 +30,7 @@ namespace BinTreeVisualization.UI
             VerticalAlignment = VerticalAlignment.Top;
             HorizontalAlignment = HorizontalAlignment.Center;
             RenderTransformOrigin = new(0.0, 0.5);
+            TriggerSpawnAnim();
         }
 
         private Canvas GetCanvas() => VisualTreeHelper.GetParent(this) as Canvas;
@@ -125,6 +126,9 @@ namespace BinTreeVisualization.UI
         {
             TransformGroup transformGroup = new();
 
+/*            ScaleTransform scaleTransform = new(GetDistanceTo(target) / 100, 1);
+            transformGroup.Children.Add(scaleTransform);*/
+
             RotateTransform rotateTransform = new(GetRotToTarget(target));
             transformGroup.Children.Add(rotateTransform);
 
@@ -142,8 +146,10 @@ namespace BinTreeVisualization.UI
         /// <summary>
         /// Remove this arrow from the canvas.
         /// </summary>
-        public void RemoveSelf()
+        public async void RemoveSelf()
         {
+            TriggerDespawnAnim();
+            await Task.Delay(200);
             GetCanvas().Children.Remove(this);
         }
 
@@ -319,6 +325,22 @@ namespace BinTreeVisualization.UI
         {
             MoveSourceToLoc(newSource);
             MoveTargetToLoc(newTarget);
+        }
+
+        /// <summary>
+        /// Trigger spawn fade-in animation.
+        /// </summary>
+        public void TriggerSpawnAnim()
+        {
+            BeginStoryboard((Storyboard)FindResource("AnimSpawn"));
+        }
+
+        /// <summary>
+        /// Trigger despawn fade-out animation.
+        /// </summary>
+        public void TriggerDespawnAnim()
+        {
+            BeginStoryboard((Storyboard)FindResource("AnimDespawn"));
         }
     }
 }

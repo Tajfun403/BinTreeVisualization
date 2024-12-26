@@ -204,7 +204,12 @@ public class Node<T> where T : IComparable<T>
         if (node is null)
             return null;
 
-        Debug.Assert(node != this, "Tried to adopt itself as a child");
+        // Debug.Assert(node != this, "Tried to adopt itself as a child");
+        if (node == this)
+        {
+            Debug.WriteLine("Tried to adopt itself as a child");
+            return this;
+        }
 
         Debug.WriteLine($"Setting parent of {{{node}}} to {{{this}}}");
         node.Parent = this;
@@ -483,21 +488,33 @@ public class Node<T> where T : IComparable<T>
     /// <returns>Whether the value of left is bigger than the value of right</returns>
     public static bool operator >(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) > 0;
 
-    /// <summary>
-    /// Compare nodes value-wise
-    /// </summary>
-    /// <param name="self"></param>
-    /// <param name="other"></param>
-    /// <returns>Whether the value of left is smaller than the value of right</returns>
+    /// <inheritdoc cref="operator }=(Node{T}, Node{T})"/>
     public static bool operator <(T self, Node<T> other) => self.CompareTo(other.Value) < 0;
+
+    /// <inheritdoc cref="operator {(Node{T}, Node{T})"/>
+    public static bool operator >(T self, Node<T> other) => self.CompareTo(other.Value) > 0;
 
     /// <summary>
     /// Compare nodes value-wise
     /// </summary>
     /// <param name="self"></param>
-    /// <param name="other"></param>    
-    /// /// <returns>Whether the value of left is smaller than the value of right</returns>
-    public static bool operator >(T self, Node<T> other) => self.CompareTo(other.Value) > 0;
+    /// <param name="other"></param>
+    /// <returns>Whether the value of left is smaller or equals to the value of right</returns>
+    public static bool operator <=(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) <= 0;
+
+    /// <summary>
+    /// Compare nodes value-wise
+    /// </summary>
+    /// <param name="self"></param>
+    /// <param name="other"></param>
+    /// <returns>Whether the value of left is bigger or equals to the value of right</returns>
+    public static bool operator >=(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) >= 0;
+
+    /// <inheritdoc cref="operator {=(Node{T}, Node{T})"/>
+    public static bool operator <=(T self, Node<T> other) => self.CompareTo(other.Value) <= 0;
+
+    /// <inheritdoc cref="operator }=(Node{T}, Node{T})"/>
+    public static bool operator >=(T self, Node<T> other) => self.CompareTo(other.Value) >= 0;
 
     /// <summary>
     /// Get or set a node by its side

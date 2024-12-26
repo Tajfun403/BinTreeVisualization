@@ -45,6 +45,8 @@ namespace BinTreeVisualization.UI
 
         public static Color StrokeBlue => Color.FromArgb(255, 67, 149, 212);
 
+        public static Color RedColor => Color.FromArgb(255, 225, 60, 60);
+
         public void Activate()
         {
             BeginStoryboard((Storyboard)FindResource("AnimActivate"));

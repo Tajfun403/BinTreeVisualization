@@ -52,12 +52,8 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
 
     void OnInsert(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrEmpty(OperationArgument))
-            return;
-        if (double.TryParse(OperationArgument, out double arg))
+        if (GetDoubleArg(out double arg))
             BinTree.Insert(arg);
-        else
-            Debug.WriteLine($"Invalid input of {OperationArgument}");
 
         lastOperation = OnInsert;
     }
@@ -72,6 +68,34 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
     {
         BinTree.GetMax();
         lastOperation = OnGetMax;
+    }
+
+    bool GetDoubleArg(out double arg)
+    {
+        if (string.IsNullOrEmpty(OperationArgument))
+        {
+            arg = 0;
+            return false;
+        }
+        if (double.TryParse(OperationArgument, out arg))
+            return true;
+        Debug.WriteLine($"Invalid input of {OperationArgument}");
+        return false;
+    }
+
+    void OnFind(object sender, RoutedEventArgs e)
+    {
+        if (GetDoubleArg(out double arg))
+            BinTree.Find(arg);
+
+        lastOperation = OnFind;
+    }
+
+    void OnDelete(object sender, RoutedEventArgs e)
+    {
+        if (GetDoubleArg(out double arg))
+            BinTree.Delete(arg);
+        lastOperation = OnDelete;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -92,6 +116,10 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         else if (e.Key == Key.Escape)
         {
             BinTree.FinishCurrOperation();
+        }
+        else  if (e.Key == Key.F1)
+        {
+            BinTree.BreakInto();
         }
     }
 }
