@@ -22,7 +22,7 @@ public class Node<T> where T : IComparable<T>
     /// Backing element placed in the UI
     /// </summary>
     public NodeControl BackingControl { get; set; }
-    private BinTree<T> tree;
+    private BinTree<T> Tree { get; init; }
 
     /// <summary>
     /// The node's parent.
@@ -65,7 +65,7 @@ public class Node<T> where T : IComparable<T>
     private Node(T value, BinTree<T> tree)
     {
         Value = value;
-        this.tree = tree;
+        this.Tree = tree;
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public class Node<T> where T : IComparable<T>
     /// <returns></returns>
     public Node<T> SpawnChild(T value, bool bLeft)
     {
-        var node = new Node<T>(value, tree);
+        var node = new Node<T>(value, Tree);
         node.Parent = this;
         var UIControl = CreateUIElem(value, bLeft);
         node.BackingControl = UIControl;
@@ -116,6 +116,7 @@ public class Node<T> where T : IComparable<T>
     }
 
     public const int ToBottomOffset = 70;
+    // public const int ToBottomOffset = 70;
     // public const int ToSideOffset = 150;
     public const int ToSideOffset = 100;
     public double CurrWidth => BackingControl.Width;
@@ -130,7 +131,7 @@ public class Node<T> where T : IComparable<T>
     public Point DesiredLoc { get; private set; }
 
     /// <summary>
-    /// Current location of the node in the UI. Might be volative because it is affected by animations.<para/>
+    /// Current location of the node in the UI. Might be volatile because it is affected by animations.<para/>
     /// Use <see cref="DesiredLoc"/> for location-related operations.
     /// </summary>
     public Point CurrLoc => GetLocOf(BackingControl);
@@ -170,7 +171,7 @@ public class Node<T> where T : IComparable<T>
         Point newLoc = new(oldLoc.X + (bLeft ? -ToSideOffset : ToSideOffset), oldLoc.Y + ToBottomOffset);
         Canvas.SetLeft(el, newLoc.X);
         Canvas.SetTop(el, newLoc.Y);
-        tree.GetCanvas().Children.Add(el);
+        Tree.GetCanvas().Children.Add(el);
         return el;
     }
 
@@ -188,7 +189,7 @@ public class Node<T> where T : IComparable<T>
         Canvas.SetLeft(arrow, this.DesiredLoc.X);
         Canvas.SetTop(arrow, this.DesiredLoc.Y);
 
-        tree.GetCanvas().Children.Add(arrow);
+        Tree.GetCanvas().Children.Add(arrow);
         return arrow;
     }
 
@@ -319,7 +320,7 @@ public class Node<T> where T : IComparable<T>
     /// <returns></returns>
     public Node<T> GetRelativeNode(int toRight)
     {
-        var row = tree.GetRow(GetDepth());
+        var row = Tree.GetRow(GetDepth());
         var selfIdx = row.IndexOf(this);
         var searchedIdx = selfIdx + toRight;
         if (searchedIdx < 0 || searchedIdx >= row.Count)
@@ -329,7 +330,7 @@ public class Node<T> where T : IComparable<T>
 
     public void Reposition(bool bIntoRight)
     {
-        var row = tree.GetRow(GetDepth());
+        var row = Tree.GetRow(GetDepth());
 
         // I am a problematic node
         // check if I am within NodeWidth of any nodes in my row
@@ -453,6 +454,7 @@ public class Node<T> where T : IComparable<T>
         }
     }
 
+    /// <inheritdoc cref="object.ToString"/>
     public override string ToString()
     {
         List<string> parts = [$"Node {Value}"];

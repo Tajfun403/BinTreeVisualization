@@ -7,8 +7,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="10" d:DesignWidth="100">
     <!-- https://stackoverflow.com/a/68552890 -->
-    <Canvas Width="110" Height="10" VerticalAlignment="Center" HorizontalAlignment="Left">
-        <Line X1="0" Y1="5" X2="95" Y2="5" Stroke="#ffffff" StrokeThickness="3"/>
-        <Line X1="95" Y1="5" X2="95" Y2="5" Stroke="#ffffff" StrokeThickness="10" StrokeEndLineCap="Triangle"/>
+    <Canvas Width="100" Height="20" VerticalAlignment="Center" HorizontalAlignment="Left">
+        <Line X1="0" Y1="0" X2="90" Y2="0" Stroke="#aaa" StrokeThickness="6"/>
+        <Line X1="90" Y1="0" X2="90" Y2="0" Stroke="#aaa" StrokeThickness="20" StrokeEndLineCap="Triangle"/>
     </Canvas>
 </UserControl>
