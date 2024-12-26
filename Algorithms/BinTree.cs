@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Xps;
+using BinTreeVisualization.Stats;
 using BinTreeVisualization.UI;
 
 namespace BinTreeVisualization.Algorithms;
@@ -47,6 +48,19 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     {
     }
 
+    private int ComparisonsCount = 0;
+    private int TraversalCount = 0;
+
+    public TreeStats Stats { get; private set; } = new();
+
+    private void FinishOperationStats(OperationType type)
+    {
+        var statsEntry = new OperationStats(ComparisonsCount, TraversalCount, Traverse().ToList().Count);
+        Stats.AddStats(statsEntry, type);
+        ComparisonsCount = 0;
+        TraversalCount = 0;
+    }
+
     /// <summary>
     /// Create tree's root with the specified <paramref name="value"/>.
     /// </summary>
@@ -63,7 +77,24 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns></returns>
     public async Task<Node<T>> Find(T value)
     {
-        return await Find(value, Root);
+        await OperationGuard();
+        var result = await Find(value, Root);
+        FinishOperation();
+        FinishOperationStats(OperationType.Search);
+        return result;
+    }
+
+    /// <summary>
+    /// Find <paramref name="value"/> in the tree.
+    /// </summary>
+    /// <param name="value">The value to find</param>
+    /// <param name="bAsSupportingOp"><see cref="true"/> if it's executed as part of another operation and thus should not wait for exclusivity</param>
+    /// <returns></returns>
+    private async Task<Node<T>> Find(T value, bool bAsSupportingOp)
+    {
+        if (bAsSupportingOp)
+            return await Find(value, Root);
+        else return await Find(value);
     }
 
     /// <summary>
@@ -74,6 +105,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns></returns>
     public async Task<Node<T>> Find(T value, Node<T> currNode)
     {
+        TraversalCount++;
         await ResetText();
         currNode.Activate();
         SetText($"Comparing {value} to {currNode.Value}");
@@ -88,6 +120,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             return currNode;
         }
 
+        ComparisonsCount++;
         bool bGoLeft = value < currNode;
         string s = bGoLeft ? $"{value} is smaller; searching into left subtree" :
                      $"{value} is larger; searching into right subtree";
@@ -146,6 +179,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         SetText($"Traversing to the leftmost node");
         while (it.Left != null)
         {
+            TraversalCount++;
             it = it.Left;
             await Blink(it);
         }
@@ -169,6 +203,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         SetText($"Traversing to the rightmost node");
         while (it.Right != null)
         {
+            TraversalCount++;
             it = it.Right;
             await Blink(it);
         }
@@ -194,10 +229,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             FinishOperation();
             return;
         }
-        var victim = await Find(value);
+        var victim = await Find(value, true);
         if (victim != null)
             await Delete(victim);
         FinishOperation();
+        FinishOperationStats(OperationType.Delete);
     }
 
     /// <summary>
@@ -260,6 +296,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns></returns>
     public async Task Delete(Node<T> victim)
     {
+        TraversalCount++;
         if (victim.Left is null && victim.Right is null)
         {
             SetText($"Deleting leaf {victim.Value}");
@@ -267,6 +304,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             if (victim == Root)
                 Root = null!;
 
+            TraversalCount += 2;
             var victimsParentSquare = victim.Parent?.Parent;
             var victimParent = victim.Parent;
 
@@ -281,10 +319,16 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             if (victimsParentSquare != null)
                 await BalanceTreeIfNeeded(victimsParentSquare);
 
+            await ResetText();
+
             return;
         }
 
+        await ResetText();
+        SetText($"Looking for successor for {victim.Value}");
+        await Delay(1000);
         Node<T> successor = null;
+        TraversalCount++;
         if (victim.Right != null)
             successor = await GetMin(victim.Right);
         successor ??= victim.Left!;
@@ -333,6 +377,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             await ResetText();
         }
         FinishOperation();
+        FinishOperationStats(OperationType.Insert);
     }
 
     private bool bSkipAnimations { get; set; }
@@ -407,11 +452,13 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns>Passed-in subtree with inserted <paramref name="value"/></returns>
     public async Task<Node<T>> Insert(T value, Node<T> currNode)
     {
+        TraversalCount++;
         await ResetText();
         currNode.Activate();
         SetText($"Comparing {value} to {currNode.Value}");
         await Delay(500);
 
+        ComparisonsCount++;
         bool bGoLeft = value < currNode;
         string s = bGoLeft ? $"{value} is smaller; inserting into left subtree" :
                      $"{value} is larger; inserting into right subtree";
@@ -450,6 +497,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await ResetText();
         // SetText($"Inserted into subtree, rebalacing");
 
+        TraversalCount++;
         await BalanceTreeIfNeeded(currNode);
 
         return ret;
@@ -515,6 +563,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     private async Task<Node<T>> Rotate(Node<T> currNode, bool bLeftRotation)
     {
         var parent = currNode.Parent;
+        TraversalCount++;
 
         Node<T> topChild = currNode;
         Node<T> middleChild = null;
@@ -562,6 +611,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             else
                 Debug.Fail("Invalid tree passed for a rotation!");
         }
+
+        TraversalCount += 3;
 
         topChild.DetachFromParent();
         middleChild.DetachFromParent();

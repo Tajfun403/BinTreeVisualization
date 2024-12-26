@@ -60,12 +60,14 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
 
     void OnGetMin(object sender, RoutedEventArgs e)
     {
+        // BinTree.Stats.ShowWindow();
         BinTree.GetMin();
         lastOperation = OnGetMin;
     }
 
     void OnGetMax(object sender, RoutedEventArgs e)
     {
+        // AddRandomItems(100);
         BinTree.GetMax();
         lastOperation = OnGetMax;
     }
@@ -96,6 +98,16 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         if (GetDoubleArg(out double arg))
             BinTree.Delete(arg);
         lastOperation = OnDelete;
+    }
+
+    void AddRandomItems(int count)
+    {
+        Random rand = new();
+        for (int i = 0; i < count; i++)
+        {
+            BinTree.Insert(rand.NextDouble() * 100);
+        }
+        BinTree.FinishCurrOperation();
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
