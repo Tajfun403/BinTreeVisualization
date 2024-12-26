@@ -122,10 +122,20 @@ public class Node<T> where T : IComparable<T>
     public double CurrHeight => BackingControl.Height;
     public const double NodeWidth = 120;
     public const double NodeHeight = 70;
-    public Point DesiredLoc { get; set; }
+
+    /// <summary>
+    /// Desired location of the node. Might be either the current location, or the location the new will finish at once its animation end. <para/>
+    /// Use <see cref="MoveToLoc(Point)"/> to move the node to a new location.
+    /// </summary>
+    public Point DesiredLoc { get; private set; }
+
+    /// <summary>
+    /// Current location of the node in the UI. Might be volative because it is affected by animations.<para/>
+    /// Use <see cref="DesiredLoc"/> for location-related operations.
+    /// </summary>
     public Point CurrLoc => GetLocOf(BackingControl);
 
-    public Point GetLocOf(NodeControl control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
+    private Point GetLocOf(NodeControl control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
 
     /// <summary>
     /// Create a root node to start a new tree.
@@ -133,7 +143,7 @@ public class Node<T> where T : IComparable<T>
     /// <typeparam name="T"></typeparam>
     /// <param name="value"></param>
     /// <param name="parent"></param>
-    /// <returns></returns>
+    /// <returns>The newly created <see cref="Node{T}"/></returns>
     public static Node<T> CreateRoot<T>(T value, BinTree<T> parent) where T : IComparable<T>
     {
         NodeControl el = new(value);
@@ -147,6 +157,12 @@ public class Node<T> where T : IComparable<T>
         return newNode;
     }
 
+    /// <summary>
+    /// Create a new UI element for a node and add it to the <see cref="Canvas"/>
+    /// </summary>
+    /// <param name="value">Value of the new node</param>
+    /// <param name="bLeft">Whether to prepare the child on parent's left side.</param>
+    /// <returns>The created UI element.</returns>
     private NodeControl CreateUIElem(T value, bool bLeft)
     {
         NodeControl el = new(value);
@@ -158,6 +174,11 @@ public class Node<T> where T : IComparable<T>
         return el;
     }
 
+    /// <summary>
+    /// Create a UI arrow from this node pointing to another node, add it to <see cref="Canvas"/>, and return it.
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns>The created UI element.</returns>
     private NodeArrow CreateArrowTo(Node<T> node)
     {
         NodeArrow arrow = new();
@@ -171,6 +192,12 @@ public class Node<T> where T : IComparable<T>
         return arrow;
     }
 
+    /// <summary>
+    /// Adopt a child node. The child along its entire subtree will be moved to the correct side of this node.<para/>
+    /// If selves children slots are full, the child will itself adopt one of the current children in order to to create a chain.
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
     public Node<T> AdoptChild(Node<T> node)
     {
         if (node is null)
@@ -228,14 +255,22 @@ public class Node<T> where T : IComparable<T>
         return node;
     }
 
+    /// <summary>
+    /// Orphan the children of this node
+    /// </summary>
+    /// <param name="OrphanLeftChild">Whether to orphan the left child</param>
+    /// <param name="OrphanRightChild">Whether to orphan the right child</param>
     public void OrphanChildren(bool OrphanLeftChild = true, bool OrphanRightChild = true)
     {
         if (OrphanLeftChild)
-            Left = null;
+            Left?.DetachFromParent();
         if (OrphanRightChild)
-            Right = null;
+            Right?.DetachFromParent();
     }
 
+    /// <summary>
+    /// Detach this node from its parent
+    /// </summary>
     public void DetachFromParent()
     {
         if (Parent is null)
@@ -247,6 +282,10 @@ public class Node<T> where T : IComparable<T>
         Parent = null;
     }
 
+    /// <summary>
+    /// Get depth, i.e. how many levels deep is this node in the tree.
+    /// </summary>
+    /// <returns>Depth of the node</returns>
     public int GetDepth()
     {
         if (Parent is null)
@@ -254,6 +293,10 @@ public class Node<T> where T : IComparable<T>
         return 1 + Parent.GetDepth();
     }
 
+    /// <summary>
+    /// Get height of the node, i.e. how many levels deep is the deepest child of this node.
+    /// </summary>
+    /// <returns>Height of the node</returns>
     public int GetHeight()
     {
         return 1 + Math.Max(Left?.GetHeight() ?? 0, Right?.GetHeight() ?? 0);

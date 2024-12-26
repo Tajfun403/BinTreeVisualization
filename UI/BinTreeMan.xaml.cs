@@ -20,12 +20,15 @@ using BinTreeVisualization.Algorithms;
 namespace BinTreeVisualization.UI;
 
 /// <summary>
-/// Interaction logic for BinTreeMan.xaml
+/// Page which holds both a BinTreeControl and other controls that allow the user to interact with it.
 /// </summary>
 public partial class BinTreeMan : Page, INotifyPropertyChanged
 {
     public BinTree<double> BinTree { get; set; }
 
+    /// <summary>
+    /// The argument of the operation to be performed.
+    /// </summary>
     public string OperationArgument
     {
         get;

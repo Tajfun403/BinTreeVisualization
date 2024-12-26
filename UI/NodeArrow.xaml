@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:BinTreeVisualization.UI"
              mc:Ignorable="d" 
              d:DesignHeight="10" d:DesignWidth="100">
+    <!-- https://stackoverflow.com/a/68552890 -->
     <Canvas Width="110" Height="10" VerticalAlignment="Center" HorizontalAlignment="Left">
         <Line X1="0" Y1="5" X2="95" Y2="5" Stroke="#ffffff" StrokeThickness="3"/>
         <Line X1="95" Y1="5" X2="95" Y2="5" Stroke="#ffffff" StrokeThickness="10" StrokeEndLineCap="Triangle"/>

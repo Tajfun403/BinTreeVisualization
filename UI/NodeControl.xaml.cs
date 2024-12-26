@@ -20,7 +20,7 @@ using System.Windows.Shapes;
 namespace BinTreeVisualization.UI
 {
     /// <summary>
-    /// Interaction logic for NodeControl.xaml
+    /// UI element that represents a node in a binary tree.
     /// </summary>
     public partial class NodeControl : UserControl, INotifyPropertyChanged
     {
@@ -44,11 +44,6 @@ namespace BinTreeVisualization.UI
         public static Color StrokeBase => Color.FromArgb(255, 238, 238, 238);
 
         public static Color StrokeBlue => Color.FromArgb(255, 67, 149, 212);
-
-        /*        public static SolidColorBrush InactiveColor => new(Color.FromArgb(0, 0, 0, 0));
-                public static SolidColorBrush ActiveColor => new(Color.FromArgb(255, 180, 120, 225));*/
-
-        // public event 
 
         public void Activate()
         {

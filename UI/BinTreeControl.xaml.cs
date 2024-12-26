@@ -46,17 +46,16 @@ public partial class BinTreeControl : UserControl
     /// If any texts are currently present, they will be despawned in a 200ms long animation.<para />
     /// If empty, returns immediately.
     /// </summary>
-    /// <returns>True if any texts were hidden, false otherwise</returns>
-    public bool ResetText()
+    public async Task ResetText(bool bWait)
     {
         var LabelsContainer = ProgressStackPanel.Children.OfType<ProgressLabel>().ToList();
         if (LabelsContainer.Count == 0)
-            return true;
+            return;
 
         LabelsContainer.ForEach(x => x.TriggerDespawnAnim());
-
+        if (bWait)
+            await Task.Delay(200);
         ProgressStackPanel.Children.Clear();
-        return false;
     }
 
     /// <summary>

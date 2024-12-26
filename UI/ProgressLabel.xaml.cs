@@ -17,7 +17,7 @@ using System.Windows.Shapes;
 namespace BinTreeVisualization.UI
 {
     /// <summary>
-    /// Interaction logic for ProgressText.xaml
+    /// A label that can represent progress which supports spawn/despawn animations and colors.
     /// </summary>
     public partial class ProgressLabel : Label
     {
@@ -26,14 +26,21 @@ namespace BinTreeVisualization.UI
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Trigger spawn fade-in animation.
+        /// </summary>
         public void TriggerSpawnAnim()
         {
             BeginStoryboard((Storyboard)FindResource("AnimSpawn"));
         }
 
+        /// <summary>
+        /// Trigger despawn fade-out animation.
+        /// </summary>
         public void TriggerDespawnAnim()
         {
             BeginStoryboard((Storyboard)FindResource("AnimDespawn"));
         }
+
     }
 }

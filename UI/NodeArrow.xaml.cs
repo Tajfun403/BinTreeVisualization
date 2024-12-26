@@ -20,7 +20,7 @@ using System.Xml.Linq;
 namespace BinTreeVisualization.UI
 {
     /// <summary>
-    /// Interaction logic for NodeArrow.xaml
+    /// Represents an arrow that can point between nodes.
     /// </summary>
     public partial class NodeArrow : UserControl
     {
@@ -32,11 +32,14 @@ namespace BinTreeVisualization.UI
             RenderTransformOrigin = new(0.0, 0.5);
         }
 
-        public Canvas GetCanvas() => VisualTreeHelper.GetParent(this) as Canvas;
+        private Canvas GetCanvas() => VisualTreeHelper.GetParent(this) as Canvas;
 
+        /// <summary>
+        /// Current in UI loc
+        /// </summary>
         public Point SelfLoc => GetLocOf(this);
 
-        public Point GetLocOf(NodeArrow control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
+        private Point GetLocOf(NodeArrow control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
 
 /*        public Point Target
         {
@@ -60,12 +63,18 @@ namespace BinTreeVisualization.UI
             }
         }*/
 
-
+        /// <summary>
+        /// The current target the arrow points to.
+        /// </summary>
         public Point Target
         {
             get => (Point)GetValue(TargetProp);
             set => SetValue(TargetProp, value);
         }
+
+        /// <summary>
+        /// The current source the arrow points from.
+        /// </summary>
         public Point Source
         {
             get => (Point)GetValue(SourceProp);
@@ -94,7 +103,6 @@ namespace BinTreeVisualization.UI
                 control.RotateToTarget(newTarget);
             }
         }
-
         private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (NodeArrow)d;
@@ -102,8 +110,6 @@ namespace BinTreeVisualization.UI
             {
                 Canvas.SetTop(control, newSource.Y);
                 Canvas.SetLeft(control, newSource.X);
-
-                // Ensure rotation updates relative to the new Source
                 control.RotateToTarget(control.Target);
             }
         }
@@ -111,6 +117,10 @@ namespace BinTreeVisualization.UI
         public double TargetX => Target.X;
         public double TargetY => Target.Y;
 
+        /// <summary>
+        /// Set the arrow to instantly rotate towards specified target.
+        /// </summary>
+        /// <param name="target"></param>
         public void RotateToTarget(Point target)
         {
             TransformGroup transformGroup = new();
@@ -124,6 +134,9 @@ namespace BinTreeVisualization.UI
             this.RenderTransform = transformGroup;
         }
 
+        /// <summary>
+        /// Remove this arrow from the canvas.
+        /// </summary>
         public void RemoveSelf()
         {
             GetCanvas().Children.Remove(this);
@@ -149,6 +162,10 @@ namespace BinTreeVisualization.UI
             return new(fromUpperLeftCorner.X + Node<int>.NodeWidth / 2, fromUpperLeftCorner.Y + Node<int>.NodeHeight);
         }
 
+        /// <summary>
+        /// Repoint the source's location to new loc in a 0.5s animation.
+        /// </summary>
+        /// <param name="newSource"></param>
         public void MoveSourceToLoc(Point newSource)
         {
             newSource = GetLowerArrowSocket(newSource);
@@ -175,6 +192,10 @@ namespace BinTreeVisualization.UI
             MoveTargetToLoc(node.GetUpperArrowSocket());
         }
 
+        /// <summary>
+        /// Repoint the target's location to new loc in a 0.5s animation.
+        /// </summary>
+        /// <param name="newTarget"></param>
         public void MoveTargetToLoc(Point newTarget)
         {
             newTarget = GetUpperArrowSocket(newTarget);
@@ -191,6 +212,11 @@ namespace BinTreeVisualization.UI
             storyboard.Begin();
         }
 
+        /// <summary>
+        /// Repoint the source and target locations to new locs in a 0.5s animation.
+        /// </summary>
+        /// <param name="newSource"></param>
+        /// <param name="newTarget"></param>
         public void RotateToLoc(Point newSource, Point newTarget)
         {
             MoveSourceToLoc(newSource);

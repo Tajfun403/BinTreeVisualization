@@ -13,11 +13,27 @@ using BinTreeVisualization.UI;
 
 namespace BinTreeVisualization.Algorithms;
 
-
+/// <summary>
+/// A binary search tree, associated with a WPF backing control that nodes are being represented on.<para/>
+/// Can function as a basic BST and an AVL tree.
+/// </summary>
+/// <typeparam name="T">Node type</typeparam>
 public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
 {
+    /// <summary>
+    /// Tree's root node.
+    /// </summary>
     public Node<T> Root { get; set; }
+
+    /// <summary>
+    /// The UI control associated with the tree which holds all the visual nodes, arrows, and progress text.
+    /// </summary>
     public BinTreeControl BackingControl { get; init; }
+
+    /// <summary>
+    /// Ref to the backing control's canvas.
+    /// </summary>
+    /// <returns></returns>
     public Canvas GetCanvas() => BackingControl.MainCanvas;
 
     public int Height => GetHeight(Root);
@@ -34,16 +50,31 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     {
     }
 
+    /// <summary>
+    /// Create tree's root with the specified <paramref name="value"/>.
+    /// </summary>
+    /// <param name="value"></param>
     private void CreateRoot(T value)
     {
         Root = Node<T>.CreateRoot(value, this);
     }
 
+    /// <summary>
+    /// Find <paramref name="value"/> in the tree.
+    /// </summary>
+    /// <param name="value">The value to find</param>
+    /// <returns></returns>
     public bool Find(T value)
     {
         return Find(value, Root);
     }
 
+    /// <summary>
+    /// Recursively search the tree to find the specified <paramref name="value"/>. Search starts from <paramref name="currNode"/>.
+    /// </summary>
+    /// <param name="value">The value to find.</param>
+    /// <param name="currNode">Subtree to search for the node in currently.</param>
+    /// <returns></returns>
     public bool Find(T value, Node<T> currNode)
     {
         if (currNode is null)
@@ -106,6 +137,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         return it.Value;
     }
 
+    /// <summary>
+    /// Insert <paramref name="value"/> into the tree.
+    /// </summary>
+    /// <param name="value">The value to insert.</param>
     public async void Insert(T value)
     {
         await OperationGuard();
@@ -125,28 +160,18 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
                 LayoutTree();
             }
             LastHeight = currHeight;
-            IsOperationInProgress = false;
             await Delay(2000);
             await ResetText();
         }
         FinishOperation();
     }
 
-    private bool bSkipAnimations = false;
-    private bool IsOperationInProgress
-    {
-        get;
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-        }
-    }
+    private bool bSkipAnimations { get; set; }
 
     /// <summary>
     /// Delays the execution of the current task if in not-instant context.
     /// </summary>
-    /// <param name="ms"></param>
+    /// <param name="ms">Delay in miliseconds</param>
     /// <returns></returns>
     private async Task Delay(int ms)
     {
@@ -203,6 +228,12 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         Debug.Assert(operationSem.CurrentCount <= 1);
     }
 
+    /// <summary>
+    /// Internal insertion. Try to insert the <paramref name="value"/> into the subtree starting with <paramref name="currNode"/>.
+    /// </summary>
+    /// <param name="value">The value to insert.</param>
+    /// <param name="currNode">Subtree which starts by this node.</param>
+    /// <returns>Passed-in subtree with inserted <paramref name="value"/></returns>
     public async Task<Node<T>> Insert(T value, Node<T> currNode)
     {
         await ResetText();
@@ -280,6 +311,13 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         }
 
     }
+
+    /// <summary>
+    /// Perform adoption of a node by a parent with a 3-second long animation.
+    /// </summary>
+    /// <param name="parent">The new parent</param>
+    /// <param name="child">The child to be adopted</param>
+    /// <returns></returns>
     private async Task AnimAdoption(Node<T> parent, Node<T> child)
     {
         SetText($"{parent.Value} adopts {child.Value}");
@@ -296,13 +334,15 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     }
 
     /// <summary>
-    /// Left-heavy subtree. Rotate middle nodes to the right.
+    /// Side-heavy subtree. Rotate to the specified direction.<para/>
+    /// The subtree should be rotated left if it's right-heavy (<paramref name="bLeftRotation"/> = <see langword="true"/>), and right in the opposite case.
     /// </summary>
-    /// <param name="currNode"></param>
-    /// <returns></returns>
-    private async Task<Node<T>> RotateRight(Node<T> currNode)
+    /// <param name="currNode">Node which the unbalanced subtree starts with</param>
+    /// <param name="bLeftRotation"><see langword="true"/> if the subtree is right-heavy and should be rotated left. <para/>
+    /// <see langword="false"/> if the subtree is left-heavy and should be rotated right</param>
+    /// <returns>New top child who the subtree starts with</returns>
+    private async Task<Node<T>> Rotate(Node<T> currNode, bool bLeftRotation)
     {
-        // left-heavy tree
         var parent = currNode.Parent;
 
         Node<T> topChild = currNode;
@@ -310,21 +350,47 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         Node<T> bottomChild = null;
         bool bMiddleChildSwapped = false;
 
-        // 1 -> 2 -> 3, forming all left leaves
-        if (currNode.Left.Left is not null)
+        // pick the top, middle, and bottom children from the chain
+        // they are picked according to their "sorted" order and not necessarily their position in the tree
+        // (bMiddleChildSwapped = true if the latter is not true)
+        if (!bLeftRotation)
         {
-            middleChild = currNode.Left;
-            bottomChild = currNode.Left.Left;
-        }
-        // 1 -> 2 -> 2.5, forming left-right leaves
-        else if (currNode.Left.Right is not null)
-        {
-            middleChild = currNode.Left.Right;
-            bottomChild = currNode.Left;
-            bMiddleChildSwapped = true;
+            // right-heavy tree
+            // 1 -> 2 -> 3, forming all left leaves
+            if (currNode.Left.Left is not null)
+            {
+                middleChild = currNode.Left;
+                bottomChild = currNode.Left.Left;
+            }
+            // 1 -> 2 -> 2.5, forming left-right leaves
+            else if (currNode.Left.Right is not null)
+            {
+                middleChild = currNode.Left.Right;
+                bottomChild = currNode.Left;
+                bMiddleChildSwapped = true;
+            }
+            else
+                Debug.Fail("Invalid tree passed for a rotation!");
         }
         else
-            Debug.Assert(false, "Invalid tree state!");
+        {
+            // left-heavy tree
+            // 3 -> 2 -> 1, forming all right leaves
+            if (currNode.Right.Right is not null)
+            {
+                middleChild = currNode.Right;
+                bottomChild = currNode.Right.Right;
+            }
+            // 3 -> 2 -> 2.5, forming right-left leaves
+            else if (currNode.Right.Left is not null)
+            {
+                middleChild = currNode.Right.Left;
+                bottomChild = currNode.Right;
+                bMiddleChildSwapped = true;
+            }
+            else
+                Debug.Fail("Invalid tree passed for a rotation!");
+        }
 
         topChild.DetachFromParent();
         middleChild.DetachFromParent();
@@ -361,65 +427,24 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         return middleChild;
     }
 
+    /// <summary>
+    /// Left-heavy subtree. Rotate middle nodes to the right.
+    /// </summary>
+    /// <param name="currNode"></param>
+    /// <returns>New top child who the subtree starts with</returns>
+    private async Task<Node<T>> RotateRight(Node<T> currNode)
+    {
+        return await Rotate(currNode, false);
+    }
+
+    /// <summary>
+    /// Right-heavy subtree. Rotate middle nodes to the right.
+    /// </summary>
+    /// <param name="currNode"></param>
+    /// <returns>New top child who the subtree starts with</returns>
     private async Task<Node<T>> RotateLeft(Node<T> currNode)
     {
-        // right-heavy tree
-        var parent = currNode.Parent;
-        Node<T> topChild = currNode;
-        Node<T> middleChild = null;
-        Node<T> bottomChild = null;
-
-        bool bMiddleChildSwapped = false;
-
-        // 3 -> 2 -> 1, forming all right leaves
-        if (currNode.Right.Right is not null)
-        {
-            middleChild = currNode.Right;
-            bottomChild = currNode.Right.Right;
-        }
-        // 3 -> 2 -> 2.5, forming right-left leaves
-        else if (currNode.Right.Left is not null)
-        {
-            middleChild = currNode.Right.Left;
-            bottomChild = currNode.Right;
-            bMiddleChildSwapped = true;
-        }
-        else
-            Debug.Assert(false, "Invalid tree state!");
-
-        topChild.DetachFromParent();
-        middleChild.DetachFromParent();
-
-        // parent?.OrphanChildren(false, true);
-        // topChild.OrphanChildren(false, true);
-
-        SetText($"Rotating left around pivot {middleChild.Value}", TextAction.Violet);
-
-        await AnimAdoption(middleChild, topChild);
-        // middleChild.AdoptChild(topChild);
-        if (parent != null)
-            await AnimAdoption(parent, middleChild);
-
-        if (bMiddleChildSwapped)
-        {
-            bottomChild.DetachFromParent();
-            // bottomChild.OrphanChildren(true, false);
-            await AnimAdoption(middleChild, bottomChild);
-            // middleChild.AdoptChild(bottomChild);
-        }
-
-        // parent?.AdoptChild(middleChild);
-
-        middleChild.Parent = parent;
-
-        if (topChild == Root)
-        {
-            Root = middleChild;
-            Debug.WriteLine("Moving root");
-            Root.MoveTreeToLoc(new(0, 0));
-        }
-
-        return middleChild;
+        return await Rotate(currNode, true);
     }
 
     /// <inheritdoc cref="BinTreeControl.SetText(string, TextAction)"/>
@@ -428,15 +453,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         BackingControl.SetText(text, act);
     }
 
-    /// <summary>
-    /// Reset all current progress texts.<para />
-    /// If any texts are currently present, they will be despawned in a 200ms long animation.<para />
-    /// If empty, returns immediately.
-    /// </summary>
-    /// <returns></returns>
+    /// <inheritdoc cref="BinTreeControl.ResetText(bool)"/>
     private async Task ResetText()
     {
-        await Delay(BackingControl.ResetText() ? 200 : 0);
+        await BackingControl.ResetText(!bSkipAnimations);
     }
 
     private void LayoutTree()
@@ -498,6 +518,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
 
 }
 
+/// <summary>
+/// Colors supported by the UI.
+/// </summary>
 public enum TextAction
 {
     Base,
@@ -507,6 +530,12 @@ public enum TextAction
 
 public static class TextActionColors
 {
+    /// <summary>
+    /// Convert value from a color enum to a <see cref="System.Windows.Media.Color"/> color.
+    /// </summary>
+    /// <param name="textAction"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public static System.Windows.Media.Color GetColor(this TextAction textAction)
     {
         return textAction switch
