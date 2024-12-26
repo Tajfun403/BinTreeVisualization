@@ -13,6 +13,6 @@
      TextOptions.TextRenderingMode="Auto"
      Background="{DynamicResource MaterialDesignPaper}"
      FontFamily="{DynamicResource MaterialDesignFont}"
-     Title="MainWindow" Height="800" Width="1450">
+     Title="Binary Tree Visualization" Height="800" Width="1450">
     <Frame Source="BinTreeMan.xaml"></Frame>
 </Window>

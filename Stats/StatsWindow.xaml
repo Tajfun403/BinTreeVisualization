@@ -13,7 +13,7 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
-        Title="StatsWindow" Height="450" Width="800">
+        Title="Operations stats" Height="450" Width="800">
     <Grid>
         <TabControl>
             <TabItem Header="Insertions" Name="InsertTab">

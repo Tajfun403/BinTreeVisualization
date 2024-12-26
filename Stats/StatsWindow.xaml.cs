@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BinTreeVisualization.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,6 +23,7 @@ namespace BinTreeVisualization.Stats
         public StatsWindow()
         {
             InitializeComponent();
+            TitleBarHelper.EnableDarkMode(this);
         }
 
         void OnDataChanged()
@@ -29,9 +31,8 @@ namespace BinTreeVisualization.Stats
             statsRef.Refresh(this);
         }
 
-        public StatsWindow(TreeStats stats)
+        public StatsWindow(TreeStats stats) : this()
         {
-            InitializeComponent();
             statsRef = stats;
             DataContext = this;
 
