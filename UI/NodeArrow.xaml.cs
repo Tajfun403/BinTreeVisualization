@@ -40,7 +40,7 @@ namespace BinTreeVisualization.UI
         /// </summary>
         public Point SelfLoc => GetLocOf(this);
 
-        private Point GetLocOf(NodeArrow control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
+        private static Point GetLocOf(NodeArrow control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
 
 /*        public Point Target
         {

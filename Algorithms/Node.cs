@@ -53,8 +53,6 @@ public class Node<T> where T : IComparable<T>
     /// </summary>
     public Node<T> Right { get; private set; } = null;
 
-    // public NodeArrow LeftArrow { get; set; } = null;
-    // public NodeArrow RightArrow { get; set; } = null;
     public NodeArrow SelfArrow { get; set; } = null;
 
     /// <summary>
@@ -136,7 +134,7 @@ public class Node<T> where T : IComparable<T>
     /// </summary>
     public Point CurrLoc => GetLocOf(BackingControl);
 
-    private Point GetLocOf(NodeControl control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
+    private static Point GetLocOf(NodeControl control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
 
     /// <summary>
     /// Create a root node to start a new tree.

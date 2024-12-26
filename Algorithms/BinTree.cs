@@ -38,15 +38,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns></returns>
     public Canvas GetCanvas() => BackingControl.MainCanvas;
 
-    public int Height => GetHeight(Root);
+    public int Height => GetHeight();
     public int LastHeight { get; private set; }
 
-    private int GetHeight(Node<T> root)
-    {
-        if (root is null)
-            return 0;
-        return 1 + Math.Max(GetHeight(root.Left), GetHeight(root.Right));
-    }
+    private int GetHeight() => Root?.GetHeight() ?? 0;
 
     public BinTree()
     {
@@ -127,6 +122,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns></returns>
     public async Task<T> GetMax() => (await GetMax(Root)).Value;
 
+    /// <summary>
+    /// Blink a node for 500ms and return once the blink starts to fade.
+    /// </summary>
+    /// <param name="n"></param>
+    /// <returns></returns>
     private async Task Blink(Node<T> n)
     {
         n.Activate();
@@ -200,8 +200,20 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         FinishOperation();
     }
 
-    private void SwapNodes(Node<T> one, Node<T> other)
+    /// <summary>
+    /// Swap two nodes in the tree.
+    /// </summary>
+    /// <param name="one"></param>
+    /// <param name="other"></param>
+    private async Task SwapNodes(Node<T> one, Node<T> other)
     {
+        SetText("Swapping nodes:");
+        SetText($"Node 1: {one.Value}", TextAction.Violet);
+        SetText($"Node 2: {other.Value}", TextAction.Blink);
+        one.Activate();
+        other.ActivateBlue(true);
+        await Delay(1000);
+
         var oneParent = one.Parent;
         var otherParent = other.Parent;
 
@@ -218,7 +230,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         otherChildren.ForEach(x => one.AdoptChild(x));
 
         oneParent?.AdoptChild(other);
-        otherParent?.AdoptChild(one);
+        if (otherParent == one)
+            other.AdoptChild(one);
+        else
+            otherParent?.AdoptChild(one);
 
         if (oneParent == null)
         {
@@ -230,6 +245,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             Root = one;
             Root.MoveTreeToLoc(new(0, 0));
         }
+
+        await Delay(1000);
+        one.Deactivate();
+        other.DeactivateBlue(true);
+        await ResetText();
     }
 
     /// <summary>
@@ -243,6 +263,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         if (victim.Left is null && victim.Right is null)
         {
             SetText($"Deleting leaf {victim.Value}");
+
+            if (victim == Root)
+                Root = null!;
 
             var victimsParentSquare = victim.Parent?.Parent;
             var victimParent = victim.Parent;
@@ -264,36 +287,13 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         Node<T> successor = null;
         if (victim.Right != null)
             successor = await GetMin(victim.Right);
-        successor ??= victim.Left;
+        successor ??= victim.Left!;
 
-        SwapNodes(victim, successor);
+        await SwapNodes(victim, successor);
 
         await Delete(victim);
 
         return;
-
-        var successorParent = successor.Parent;
-        var succsParentsParent = successorParent?.Parent;
-
-        List<Node<T>> successorOldChildren = [successor.Left, successor.Right];
-        List<Node<T>> victimChildren = [victim.Left, victim.Right];
-        victim.OrphanChildren();
-
-        successor.OrphanChildren();
-        victimChildren.ForEach(x => successor.AdoptChild(x));
-
-        successor.DetachFromParent();
-        if (successorParent != null)
-            successorOldChildren.ForEach(x => successorParent.AdoptChild(x));
-        else if (successorOldChildren.Any(x => x != null))
-            Debug.Fail("Orhpanized children during removal!");
-
-        if (victimChildren.Any(x => x?.Parent is null))
-            Debug.Fail("Orhpanized children during removal!");
-
-        var victimsParent = victim.Parent;
-        victimsParent?.AdoptChild(successor);
-        await Delete(victim);
     }
 
     /// <summary>
@@ -350,9 +350,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await Task.Delay(ms);
     }
 
-    private SemaphoreSlim operationSem = new(1, 1);
-    private int currWaiting = 0;
-    private int currInside = 0;
+    private SemaphoreSlim OperationSem { get; init; } = new(1, 1);
+    private int CurrWaiting { get; set; } = 0;
+    private int CurrInside { get; set; } = 0;
 
     /// <summary>
     /// Instantly finish current operation, if any is active.
@@ -370,21 +370,21 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns></returns>
     private async Task OperationGuard()
     {
-        if (!operationSem.Wait(0))
+        if (!OperationSem.Wait(0))
         {
             Debug.WriteLine("Operation in progress, waiting");
             bSkipAnimations = true;
-            currWaiting++;
-            Debug.WriteLine($"Curr waiting {currWaiting}");
-            await operationSem.WaitAsync();
-            currWaiting--;
-            Debug.WriteLine($"Curr waiting {currWaiting}");
+            CurrWaiting++;
+            Debug.WriteLine($"Curr waiting {CurrWaiting}");
+            await OperationSem.WaitAsync();
+            CurrWaiting--;
+            Debug.WriteLine($"Curr waiting {CurrWaiting}");
             Debug.WriteLine("Entering operation");
         }
-        if (currWaiting == 0)
+        if (CurrWaiting == 0)
             bSkipAnimations = false;
-        currInside++;
-        Debug.Assert(currInside == 1, "More than one task performing actions!");
+        CurrInside++;
+        Debug.Assert(CurrInside == 1, "More than one task performing actions!");
     }
 
     /// <summary>
@@ -392,10 +392,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// </summary>
     private void FinishOperation()
     {
-        operationSem.Release();
-        currInside--;
-        Debug.Assert(currInside == 0, "More than one task performing actions!");
-        Debug.Assert(operationSem.CurrentCount <= 1);
+        OperationSem.Release();
+        CurrInside--;
+        Debug.Assert(CurrInside == 0, "More than one task performing actions!");
+        Debug.Assert(OperationSem.CurrentCount <= 1);
         AssertTreeIsValid();
     }
 
@@ -687,11 +687,18 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         return result;
     }
 
+    /// <summary>
+    /// Assert <see cref="AssertNoOrphans"/> and <see cref="AssertIsBinaryTree"/>
+    /// </summary>
     public void AssertTreeIsValid()
     {
         AssertNoOrphans();
         AssertIsBinaryTree();
     }
+
+    /// <summary>
+    /// Assert that there are no orphaned nodes.
+    /// </summary>
     public void AssertNoOrphans()
     {
         var nodes = Traverse().Select(x => x.BackingControl).ToList();
@@ -699,6 +706,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         HashSet<NodeControl> trackedNodes = new(nodes);
         Debug.Assert(!UINodes.Any(x => !trackedNodes.Contains(x)), "Some nodes are not represented in the UI");
     }
+
+    /// <summary>
+    /// Assert that the core property of the binary tree (lesser children on the left, bigger children on the right) 
+    /// is satisfied for every node in the tree.
+    /// </summary>
     public void AssertIsBinaryTree()
     {
         foreach (var node in Traverse())
