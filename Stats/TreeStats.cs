@@ -9,19 +9,33 @@ using ScottPlot.WPF;
 
 namespace BinTreeVisualization.Stats;
 
+/// <summary>
+/// Holds statistics of operations performed on a binary tree.
+/// </summary>
 public class TreeStats
 {
-    List<OperationStats> InsertStats = [];
-    List<OperationStats> DeleteStats = [];
-    List<OperationStats> SearchStats = [];
+    private List<OperationStats> InsertStats = [];
+    private List<OperationStats> DeleteStats = [];
+    private List<OperationStats> SearchStats = [];
 
+    /// <summary>
+    /// Add stats performed during a specified operation
+    /// </summary>
+    /// <param name="stats">The stats to add</param>
+    /// <param name="type">The type of the operation</param>
     public void AddStats(OperationStats stats, OperationType type)
     {
         GetList(type).Add(stats);
         OnDataChanged?.Invoke();
     }
 
-    public List<OperationStats> GetList(OperationType type)
+    /// <summary>
+    /// Get list associated with the specified operation type
+    /// </summary>
+    /// <param name="type">The operation type</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    private List<OperationStats> GetList(OperationType type)
     {
         return type switch
         {
@@ -32,6 +46,11 @@ public class TreeStats
         };
     }
 
+    /// <summary>
+    /// Calculate the list of statistics, with the average amount of operations per the count of items in the tree.
+    /// </summary>
+    /// <param name="type">The operation type to get results for</param>
+    /// <returns>An <see cref="IEnumerable{T}"/> with average comparisons and travels for each recorded tree size.</returns>
     public IEnumerable<OperationStats> GetListWithAverages(OperationType type)
     {
         var list = GetList(type);
@@ -43,7 +62,12 @@ public class TreeStats
         ));
     }
 
-    public void FillPlot(Plot plot, OperationType type)
+    /// <summary>
+    /// Fill the plot with the data of the specified operation type.
+    /// </summary>
+    /// <param name="plot">The plot</param>
+    /// <param name="type">The operaion type</param>
+    private void FillPlot(Plot plot, OperationType type)
     {
         Color white = Colors.LightGray;
         // Color white = new ScottPlot.Color("#EEE");
@@ -75,21 +99,28 @@ public class TreeStats
         plot.ShowLegend();
     }
 
-    public void FillPlot(WpfPlot plot, OperationType type)
+    /// <inheritdoc cref="FillPlot(Plot, OperationType)"/>
+    private void FillPlot(WpfPlot plot, OperationType type)
     {
         plot.Reset();
         FillPlot(plot.Plot, type);
         plot.Refresh();
     }
 
+    /// <summary>
+    /// Show a window with plots holding the stats.
+    /// </summary>
     public void ShowWindow()
     {
         var window = new StatsWindow(this);
-        FillPlot(window.InsertPlot, OperationType.Insert);
-        FillPlot(window.DeletePlot, OperationType.Delete);
-        FillPlot(window.SearchPlot, OperationType.Search);
+        Refresh(window);
         window.Show();
     }
+
+    /// <summary>
+    /// Refresh a plots window with the newest data.
+    /// </summary>
+    /// <param name="window"></param>
     public void Refresh(StatsWindow window)
     {
         FillPlot(window.InsertPlot, OperationType.Insert);
@@ -97,10 +128,20 @@ public class TreeStats
         FillPlot(window.SearchPlot, OperationType.Search);
     }
 
+    /// <summary>
+    /// Event invoked when new stats are added.
+    /// </summary>
     public delegate void StatsWindowEventHandler();
+
+    /// <summary>
+    /// Event invoked when new stats are added.
+    /// </summary>
     public event StatsWindowEventHandler OnDataChanged;
 }
 
+/// <summary>
+/// Represents the type of operation performed on a binary tree.
+/// </summary>
 public enum OperationType
 {
     Insert,

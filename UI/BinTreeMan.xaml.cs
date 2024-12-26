@@ -39,6 +39,17 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         }
     }
 
+    public bool PerformRotations
+    {
+        get;
+        set
+        {
+            field = value;
+            BinTree.PerformRotations = value;
+            OnPropertyChanged();
+        }
+    } = true;
+
     public BinTreeMan()
     {
         InitializeComponent();
@@ -60,14 +71,12 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
 
     void OnGetMin(object sender, RoutedEventArgs e)
     {
-        // BinTree.Stats.ShowWindow();
         BinTree.GetMin();
         lastOperation = OnGetMin;
     }
 
     void OnGetMax(object sender, RoutedEventArgs e)
     {
-        // AddRandomItems(100);
         BinTree.GetMax();
         lastOperation = OnGetMax;
     }
@@ -133,6 +142,21 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         {
             BinTree.BreakInto();
         }
+    }
+
+    private void OnInsertManyItems(object sender, RoutedEventArgs e)
+    {
+        AddRandomItems(100);
+    }
+
+    private void OnOpenStatsWindow(object sender, RoutedEventArgs e)
+    {
+        BinTree.Stats.ShowWindow();
+    }
+
+    private void CheckBox_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        BinTree.PerformRotations = e.NewValue as bool? ?? false;
     }
 }
 

@@ -497,7 +497,6 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await ResetText();
         // SetText($"Inserted into subtree, rebalacing");
 
-        TraversalCount++;
         await BalanceTreeIfNeeded(currNode);
 
         return ret;
@@ -511,6 +510,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns></returns>
     private async Task BalanceTreeIfNeeded(Node<T> currNode)
     {
+        if (!PerformRotations)
+            return;
+
+        TraversalCount++;
         var nodeBalance = currNode.GetNodeBalance();
         SetText($"Subtree balance: {nodeBalance}");
         await Delay(1000);
@@ -702,6 +705,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     }
 
     public List<BinTreeRow<T>> Rows { get; private set; }
+
+    /// <summary>
+    /// Whether or not to perform AVL tree rotations.
+    /// </summary>
+    public bool PerformRotations { get; set; } = true;
 
     private void RefreshRowsCache() => Rows = GetRows();
 
