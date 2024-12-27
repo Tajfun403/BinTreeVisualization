@@ -109,6 +109,43 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         lastOperation = OnDelete;
     }
 
+    public int AddItemsCount { get; set
+        {
+            field = value;
+            AddItemsCountText = $"Insert {value} items";
+            OnPropertyChanged();
+        }
+    } = 20;
+
+    public string AddItemsCountText
+    {
+        get => $"Insert {AddItemsCount} items";
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    List<int> AddItemsCounts = [10, 20, 50, 100, 200];
+
+    void SwitchAddItemsCount(bool bToDown)
+    {
+        int index = AddItemsCounts.IndexOf(AddItemsCount);
+        if (bToDown)
+        {
+            if (index == 0)
+                return;
+            AddItemsCount = AddItemsCounts[index - 1];
+        }
+        else
+        {
+            if (index == AddItemsCounts.Count - 1)
+                return;
+            AddItemsCount = AddItemsCounts[index + 1];
+        }
+    }
+
     void AddRandomItems(int count)
     {
         Random rand = new();
@@ -146,11 +183,27 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         {
             BinTree.BreakInto();
         }
+        else if (e.Key == Key.F2)
+        {
+            SwitchAddItemsCount(true);
+        }
+        else if (e.Key == Key.F3)
+        {
+            SwitchAddItemsCount(false);
+        }
+        else if (e.Key == Key.Down)
+        {
+            SwitchAddItemsCount(true);
+        }
+        else if (e.Key == Key.Up)
+        {
+            SwitchAddItemsCount(false);
+        }
     }
 
     private void OnInsertManyItems(object sender, RoutedEventArgs e)
     {
-        AddRandomItems(100);
+        AddRandomItems(AddItemsCount);
     }
 
     private void OnOpenStatsWindow(object sender, RoutedEventArgs e)

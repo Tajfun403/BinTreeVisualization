@@ -232,12 +232,12 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         var victim = await Find(value, true);
         if (victim != null)
             await Delete(victim);
-        OnNodeCountChanged();
         FinishOperation();
         FinishOperationStats(OperationType.Delete);
+        VerifyTreeLayout();
     }
 
-    public void OnNodeCountChanged()
+    public void VerifyTreeLayout()
     {
         Debug.WriteLine("Verifying tree layout and scale");
         LayoutTree();
@@ -373,12 +373,13 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         else
         {
             await Insert(value, Root);
-            OnNodeCountChanged();
+            VerifyTreeLayout();
             await Delay(2000);
             await ResetText();
         }
         FinishOperation();
         FinishOperationStats(OperationType.Insert);
+        VerifyTreeLayout();
     }
 
     private bool bSkipAnimations { get; set; }
@@ -425,7 +426,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     {
         await OperationGuard();
         FinishOperation();
-        LayoutTree();
+        VerifyTreeLayout();
     }
 
     /// <summary>
