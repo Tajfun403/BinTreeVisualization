@@ -690,6 +690,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         // BackingControl.LayoutTree(this);
         if (bLayoutNSquare)
             BackingControl.LayoutTreeNSquare(this);
+        else
+        {
+            new TreeLayout().LayoutTree(Root);
+        }
     }
 
     /// <inheritdoc cref="Node{T}.Traverse"/>

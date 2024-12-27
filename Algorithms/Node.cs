@@ -113,6 +113,8 @@ public class Node<T> where T : IComparable<T>
         return node;
     }
 
+    public bool IsLeaf() => Left is null && Right is null;
+
     public const int ToBottomOffset = 70;
     // public const int ToBottomOffset = 70;
     // public const int ToSideOffset = 150;
@@ -414,6 +416,18 @@ public class Node<T> where T : IComparable<T>
         Traverse().ToList().ForEach(x => x.MoveByLoc(LocDelta));
     }
 
+    public void MoveTreeByLoc(Point loc)
+    {
+        Traverse().ToList().ForEach(x => x.MoveByLoc(loc));
+    
+    }
+    public void MoveChildrenByLoc(Point loc)
+    {
+        // for some reason Traverse().Where(x => x != this) throws type constraint exception
+        Left?.Traverse().ToList().ForEach(x => x.MoveByLoc(loc));
+        Right?.Traverse().ToList().ForEach(x => x.MoveByLoc(loc));
+    }
+
     /// <summary>
     /// Move the associated node control by a specified amount
     /// </summary>
@@ -430,6 +444,8 @@ public class Node<T> where T : IComparable<T>
     /// <param name="loc">Location to move to</param>
     public void MoveToLoc(Point loc)
     {
+        if (loc == DesiredLoc)
+            return;
         Debug.WriteLine($"Moving {this} from {DesiredLoc} to {loc}");
         DesiredLoc = loc;
         BackingControl.MoveToLoc(loc);
