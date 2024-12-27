@@ -128,17 +128,21 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
 
     Action<object, RoutedEventArgs> lastOperation;
 
-    private void OnKeyDown(object sender, KeyEventArgs e)
+    private void OnKeyDownTextbox(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
         {
             lastOperation?.Invoke(sender, new());
         }
-        else if (e.Key == Key.Escape)
+    }
+
+    private void OnKeyDownBackground(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
         {
             BinTree.FinishCurrOperation();
         }
-        else  if (e.Key == Key.F1)
+        else if (e.Key == Key.F1)
         {
             BinTree.BreakInto();
         }

@@ -80,6 +80,9 @@ public class TreeStats
         plot.Axes.Bottom.Label.ForeColor = white;
         plot.Axes.Title.Label.ForeColor = white;
 
+        plot.Legend.FontColor = white;
+        plot.Legend.BackgroundColor = new ScottPlot.Color("#333");
+
         plot.XLabel("Tree size");
         plot.YLabel("Operations count");
         plot.Title($"{type} operations");
@@ -95,6 +98,7 @@ public class TreeStats
 
         var comparisonsLine = plot.Add.Scatter(n.ToArray(), comparisons.ToArray());
         comparisonsLine.LegendText = "Comparisons";
+        comparisonsLine.Color = new ScottPlot.Color("b077e0");
 
         plot.ShowLegend();
     }

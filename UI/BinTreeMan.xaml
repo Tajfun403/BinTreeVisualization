@@ -6,13 +6,14 @@
       xmlns:local="clr-namespace:BinTreeVisualization.UI" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       mc:Ignorable="d" 
       d:DesignHeight="600" d:DesignWidth="1000"
-     TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-     TextElement.FontWeight="Regular"
-     TextElement.FontSize="13"
-     TextOptions.TextFormattingMode="Ideal"
-     TextOptions.TextRenderingMode="Auto"
-     Background="{DynamicResource MaterialDesignPaper}"
-     FontFamily="{DynamicResource MaterialDesignFont}"
+      TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+      TextElement.FontWeight="Regular"
+      TextElement.FontSize="13"
+      TextOptions.TextFormattingMode="Ideal"
+      TextOptions.TextRenderingMode="Auto"
+      Background="{DynamicResource MaterialDesignPaper}"
+      FontFamily="{DynamicResource MaterialDesignFont}"
+      KeyDown="OnKeyDownBackground" 
       Title="BinTreeMan">
 
 
@@ -42,7 +43,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBox Name="InputTextBox" KeyDown="OnKeyDown" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Width="200" Grid.Column="0"
+            <TextBox Name="InputTextBox" KeyDown="OnKeyDownTextbox" HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" Width="200" Grid.Column="0"
                      Text="{Binding OperationArgument, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      FontSize="20"/>
             <Button Content="Insert item" Click="OnInsert" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"/>
