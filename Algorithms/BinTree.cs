@@ -684,10 +684,12 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await BackingControl.ResetText(!bSkipAnimations);
     }
 
+    bool bLayoutNSquare = false;
     private void LayoutTree()
     {
         // BackingControl.LayoutTree(this);
-        // BackingControl.LayoutTreeNSquare(this);
+        if (bLayoutNSquare)
+            BackingControl.LayoutTreeNSquare(this);
     }
 
     /// <inheritdoc cref="Node{T}.Traverse"/>

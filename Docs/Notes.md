@@ -35,4 +35,6 @@ It is mostly a BST tree with added rotations, so can make a single base class.
 
 # Layouting nodes
 - Layouting nodes of a binary tree in such a way so that neither space is wasted nor the nodes overlay seem to be harder than expected. Might shelve it for now.
-- Some suggestions start with Reignold-Tilford's algorithm
+- Reignold-Tilford's algorithm - but it is for normal trees and not binary ones
+- A working algorithm from 1981: https://reingold.co/tidier-drawings.pdf 
+  (Tidier Drawing of Trees by Edward M. Reingold and John S. Tilford (IEEE Transactions on Software Engineering, Volume 7, Number 2, March 1981))
