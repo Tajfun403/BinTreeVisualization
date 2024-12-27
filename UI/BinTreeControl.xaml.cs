@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -25,6 +27,51 @@ public partial class BinTreeControl : UserControl
     public BinTreeControl()
     {
         InitializeComponent();
+    }
+
+    private double CanvasDesiredScaleInverse = 1.0;
+    private double CanvasDesiredScale = 1.0;
+
+    public void SetScaleAnim(double newScale)
+    {
+        Debug.WriteLine($"Setting tree scale to {newScale}");
+        CanvasScale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(newScale, TimeSpan.FromMilliseconds(500)));
+        CanvasScale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(newScale, TimeSpan.FromMilliseconds(500)));
+        CanvasDesiredScale = newScale;
+    }
+
+    private double RescaleMultiplier = 1.3;
+    private double MinScale = 1;
+
+    private double currVirtualWidth => this.ActualWidth / CanvasDesiredScale;
+    public void VerifyScale<T>(BinTree<T> tree) where T : IComparable<T>
+    {
+        var newScale = GetNewScale(tree);
+
+        SetScaleAnim(newScale);
+    }
+
+    private double GetNewScale<T>(BinTree<T> tree) where T : IComparable<T>
+    {
+        var treeWidth = GetNodesTotalWidth(tree);
+        var windowWidth = this.ActualWidth;
+        Debug.WriteLine($"TreeWidth {treeWidth}, window width {windowWidth}");
+
+        var scaleMult = treeWidth / windowWidth;
+        if (scaleMult < MinScale)
+            scaleMult = 1.0;
+
+        return 1 / scaleMult;
+    }
+
+    private double GetNodesTotalWidth<T>(BinTree<T> tree) where T : IComparable<T>
+    {
+        var nodes = tree.Traverse();
+        var leftMostNode = nodes.Min(x => x.DesiredLoc.X);
+        var rightMostNode = nodes.Max(x => x.DesiredLoc.X) + Node<T>.NodeWidth;
+        var maxDistance = new double[] { leftMostNode, rightMostNode }.Select(x => Math.Abs(x)).Max();
+        var spread = maxDistance * 2;
+        return spread;
     }
 
     /// <summary>

@@ -114,7 +114,7 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         Random rand = new();
         for (int i = 0; i < count; i++)
         {
-            BinTree.Insert(rand.NextDouble() * 100);
+            BinTree.Insert(Double.Round(rand.NextDouble() * 100, 2));
         }
         BinTree.FinishCurrOperation();
     }

@@ -14,6 +14,10 @@
                              HorizontalAlignment="Center"
                              VerticalAlignment="Top"
                 Margin="-70,0,0,0">
+
+            <Canvas.RenderTransform>
+                <ScaleTransform x:Name="CanvasScale" CenterX="0" CenterY="0" ScaleX="1" ScaleY="1" />
+            </Canvas.RenderTransform>
         </Canvas>
         <StackPanel Name="ProgressStackPanel" Panel.ZIndex="1000" Canvas.Top="0" Canvas.Right="0" HorizontalAlignment="Right" VerticalAlignment="Top"  Width="400" Height="250"
                     >

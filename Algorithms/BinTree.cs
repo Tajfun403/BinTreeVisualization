@@ -232,8 +232,16 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         var victim = await Find(value, true);
         if (victim != null)
             await Delete(victim);
+        OnNodeCountChanged();
         FinishOperation();
         FinishOperationStats(OperationType.Delete);
+    }
+
+    public void OnNodeCountChanged()
+    {
+        Debug.WriteLine("Verifying tree layout and scale");
+        LayoutTree();
+        BackingControl.VerifyScale(this);
     }
 
     /// <summary>
@@ -365,14 +373,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         else
         {
             await Insert(value, Root);
-            LayoutTree();
-            var currHeight = Height;
-            if (LastHeight != Height)
-            {
-                LastHeight = Height;
-                LayoutTree();
-            }
-            LastHeight = currHeight;
+            OnNodeCountChanged();
             await Delay(2000);
             await ResetText();
         }
@@ -395,9 +396,27 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await Task.Delay(ms);
     }
 
+    /// <summary>
+    /// Semaphore to ensure only one operation is being performed at a time.
+    /// </summary>
     private SemaphoreSlim OperationSem { get; init; } = new(1, 1);
+
+    /// <summary>
+    /// Number of tasks waiting for the operation to finish.
+    /// </summary>
     private int CurrWaiting { get; set; } = 0;
-    private int CurrInside { get; set; } = 0;
+
+    /// <summary>
+    /// Number of tasks currently performing an operation. Should never be bigger than one!
+    /// </summary>
+    private int CurrInside
+    {
+        get; set
+        {
+            Debug.Assert(value <= 1);
+            field = value;
+        }
+    } = 0;
 
     /// <summary>
     /// Instantly finish current operation, if any is active.
@@ -406,6 +425,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     {
         await OperationGuard();
         FinishOperation();
+        LayoutTree();
     }
 
     /// <summary>
@@ -685,8 +705,14 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     }
 
     bool bLayoutNSquare = false;
+
+    /// <summary>
+    /// Perform auto layout on the tree so that the nodes do not overlap with each other.
+    /// </summary>
     private void LayoutTree()
     {
+        if (bSkipAnimations)
+            return;
         // BackingControl.LayoutTree(this);
         if (bLayoutNSquare)
             BackingControl.LayoutTreeNSquare(this);
@@ -697,7 +723,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     }
 
     /// <inheritdoc cref="Node{T}.Traverse"/>
-    IEnumerable<Node<T>> Traverse()
+    public IEnumerable<Node<T>> Traverse()
     {
         return Root?.Traverse() ?? [];
     }
