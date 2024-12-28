@@ -42,7 +42,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     public int Height => GetHeight();
     public int LastHeight { get; private set; }
 
-    private int GetHeight() => Root?.GetHeight() ?? 0;
+    /// <summary>
+    /// Get the tree's height
+    /// </summary>
+    /// <returns></returns>
+    public int GetHeight() => Root?.GetHeight() ?? 0;
 
     public BinTree()
     {
@@ -719,7 +723,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             BackingControl.LayoutTreeNSquare(this);
         else
         {
-            new TreeLayout().LayoutTree(Root);
+            new TreeLayout().LayoutTree(this);
         }
     }
 

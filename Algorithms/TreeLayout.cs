@@ -9,37 +9,52 @@ using System.Windows.Ink;
 
 namespace BinTreeVisualization.Algorithms;
 
+/// <summary>
+/// Helper class that layouts a binary tree so that no nodes overlap.
+/// </summary>
 internal class TreeLayout
 {
     /// <summary>
-    /// Layout the tree with WS algorithm
+    /// Layout the tree with modified Wetherell and Shannon algorithm
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="root"></param>
-    public void LayoutTree<T>(Node<T> root) where T : IComparable<T>
+    /// <param name="tree">The tree</param>
+    public void LayoutTree<T>(BinTree<T> tree) where T : IComparable<T>
     {
         // return;
-        treeHeight = root.GetHeight();
-        LastUsedSlotsPerLevel = Enumerable.Repeat(double.NegativeInfinity, treeHeight).ToList();
-        LayoutNode(root);
-        // var RootDelta = root.DesiredLoc - new System.Windows.Point(0, 0);
-        root.MoveTreeToLoc(new(0, 0));
+        TreeHeight = tree.GetHeight();
+        LastUsedSlotsPerLevel = Enumerable.Repeat(double.NegativeInfinity, TreeHeight).ToList();
+        LayoutNode(tree.Root);
+
+        // layout starts placing all nodes from the left side of the canvas
+        // tree needs to be re-centered afterwards
+        tree.Root.MoveTreeToLoc(new(0, 0));
     }
 
-    int treeHeight;
+    /// <summary>
+    /// Height of the tree
+    /// </summary>
+    private int TreeHeight {  get; set; }
 
     /// <summary>
-    /// A list that holds the last taken X location for each tree's level
+    /// A list that holds the last taken X location for each tree's level.<para/>
+    /// Level's value is <see cref="double.NegativeInfinity"/> if no location had been taken yet.<para/> 
+    /// Negative locations are possible if a specific loc was requested left to the canvas' left border.
     /// </summary>
     private List<double> LastUsedSlotsPerLevel { get; set; }
-    double DistBetweenNodes = Node<int>.ToSideOffset * 2;
 
     /// <summary>
-    /// Attempt to take the next slot. Start with center (0, 0)
+    /// Distance between nodes' left corners.
     /// </summary>
-    /// <param name="depth"></param>
-    /// <returns></returns>
-    public double TakeNextSlot(int depth)
+    private double DistBetweenNodes => Node<int>.ToSideOffset * 2;
+
+    /// <summary>
+    /// Attempt to take the next slot on the specified <paramref name="depth"/>. Start with center (0, 0).<para/>
+    /// Internally moves the last taken slot offset forward on success.
+    /// </summary>
+    /// <param name="depth">The level to seek the space on.</param>
+    /// <returns>The x-coordinate of the nearest free empty space.</returns>
+    private double TakeNextSlot(int depth)
     {
         var ret = LastUsedSlotsPerLevel[depth];
         if (ret == double.NegativeInfinity)
@@ -51,18 +66,18 @@ internal class TreeLayout
     /// <summary>
     /// Attempt to place node in the specified <paramref name="AttemptedLoc"/>.<para/>
     /// If the location is already taken, finds the next available location, returns the newly find location,
-    /// as well as the its <paramref name="Offset"/>
+    /// as well as the its <paramref name="Offset"/> from the requested one.
     /// </summary>
     /// <param name="depth">Tree's depth to locate the node in</param>
     /// <param name="AttemptedLoc">The location that is wanted to be taken</param>
     /// <param name="Offset">Offset of the acquired location from the requested location</param>
     /// <returns>The nearest available location</returns>
-    public double TryTakeLoc(int depth, double AttemptedLoc, out double Offset)
+    private double TryTakeLoc(int depth, double AttemptedLoc, out double Offset)
     {
         var minX = LastUsedSlotsPerLevel[depth];
         if (AttemptedLoc >= minX)
         {
-            LastUsedSlotsPerLevel[depth] = AttemptedLoc;
+            LastUsedSlotsPerLevel[depth] = AttemptedLoc + DistBetweenNodes;
             Offset = 0;
             return AttemptedLoc;
         }
@@ -72,11 +87,13 @@ internal class TreeLayout
     }
 
     /// <summary>
-    /// 
+    /// Layout this <paramref name="node"/> in the tree. To be used in post-order traversal.<para/>
+    /// Recursively layouts this <paramref name="node"/>'s children, and afterwards position this <paramref name="node"/> in appropriate space above its children.<para/>
+    /// Shifts the entire tree after parent if the parent can't be placed on the wanted position directly.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="node"></param>
-    public void LayoutNode<T>(Node<T> node) where T : IComparable<T>
+    private void LayoutNode<T>(Node<T> node) where T : IComparable<T>
     {
         if (node == null)
             return;
@@ -119,8 +136,9 @@ internal class TreeLayout
         if (Offset != 0)
             node.MoveChildrenByLoc(new(Offset, 0));
 
-        return;
-        for (int i = level; i < treeHeight; i++)
+        // since children were moved by an offset, the last taken location in the list
+        // need to be updated to account for this
+        for (int i = level + 1; i <= node.Traverse().Last().GetDepth(); i++)
         {
             LastUsedSlotsPerLevel[i] += Offset;
         }
