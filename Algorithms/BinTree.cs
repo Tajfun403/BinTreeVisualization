@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -300,6 +301,25 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await ResetText();
     }
 
+    public async Task SwapValues(Node<T> one, Node<T> other)
+    {
+        SetText("Swapping nodes:");
+        SetText($"Node 1: {one.Value}", TextAction.Violet);
+        SetText($"Node 2: {other.Value}", TextAction.Blink);
+        one.Activate();
+        other.ActivateBlue(true);
+        await Delay(1000);
+        one.SwapValues(other);
+        one.ActivateBlue();
+        other.Activate();
+        await Delay(1000);
+
+        one.Deactivate();
+        one.DeactivateBlue();
+        other.Deactivate();
+        other.DeactivateBlue();
+    }
+
     /// <summary>
     /// Delete specified node from the tree.<para/>
     /// You can find the node first with <see cref="Find(T)"/>
@@ -326,10 +346,16 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             GetCanvas().Children.Remove(victim.BackingControl);
 
             await ResetText();
+
             if (victimParent != null)
-                await BalanceTreeIfNeeded(victimParent);
-            if (victimsParentSquare != null)
-                await BalanceTreeIfNeeded(victimsParentSquare);
+            {
+                foreach (var node in victimParent.TraverseAncestors())
+                {
+                    TraversalCount++;
+                    node.RefreshHeight();
+                    await BalanceTreeIfNeeded(node);
+                }
+            };
 
             await ResetText();
 
@@ -345,9 +371,23 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             successor = await GetMin(victim.Right);
         successor ??= victim.Left!;
 
-        await SwapNodes(victim, successor);
+        // await SwapNodes(victim, successor);
+        await SwapValues(victim, successor);
+        (victim, successor) = (successor, victim);
 
+        var parent = victim.Parent;
         await Delete(victim);
+/*        successor.TraverseAncestors().ToList().ForEach(async x => {
+            TraversalCount++;
+            x.RefreshHeight();
+            // await BalanceTreeIfNeeded(x);
+        });
+        if (parent != null)
+            parent.TraverseAncestors().ToList().ForEach(async x => {
+                TraversalCount++;
+                x.RefreshHeight();
+                // await BalanceTreeIfNeeded(x);
+            });*/
 
         return;
     }
@@ -494,18 +534,22 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         {
             SetText($"Empty leaf; inserting into it");
             var child = currNode.SpawnChild(value, true);
+            // VerifyTreeLayout();
             currNode.Deactivate();
             await Delay(1000);
             child.Deactivate();
+            currNode.RefreshHeight();
             return currNode.Left!;
         }
         else if (!bGoLeft && currNode.Right is null)
         {
             SetText($"Empty leaf; inserting into it");
             var child = currNode.SpawnChild(value, false);
+            // VerifyTreeLayout();
             currNode.Deactivate();
             await Delay(1000);
             child.Deactivate();
+            currNode.RefreshHeight();
             return currNode.Right!;
         }
 
@@ -522,7 +566,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await ResetText();
         // SetText($"Inserted into subtree, rebalacing");
 
+        currNode.RefreshHeight();
         await BalanceTreeIfNeeded(currNode);
+        currNode.RefreshHeight();
 
         return ret;
     }
@@ -674,6 +720,13 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             Root.MoveTreeToLoc(new(0, 0));
         }
 
+        topChild?.RefreshHeight();
+        bottomChild?.RefreshHeight();
+        middleChild?.RefreshHeight();
+        parent?.RefreshHeight();
+
+        // VerifyTreeLayout();
+
         return middleChild;
     }
 
@@ -718,8 +771,14 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     private void LayoutTree()
     {
         if (bSkipAnimations)
+        {
+            Debug.WriteLine("Auto layout tree skipped die to bSkipAnimations");
             return;
+        }
         // BackingControl.LayoutTree(this);
+
+        Debug.WriteLine("Auto layouting tree...");
+
         if (bLayoutNSquare)
             BackingControl.LayoutTreeNSquare(this);
         else
@@ -791,6 +850,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     {
         AssertNoOrphans();
         AssertIsBinaryTree();
+        AssertCachedHeigths();
+        // AssertIsAVLTree();
     }
 
     /// <summary>
@@ -816,6 +877,25 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
                 Debug.Assert(node.Left <= node, "Left child is larger than parent");
             if (node.Right != null)
                 Debug.Assert(node.Right >= node, "Right child is smaller than parent");
+        }
+    }
+
+    public void AssertCachedHeigths()
+    {
+        foreach (var node in Traverse())
+        {
+            var calcedHeight = node.CalcHeight();
+            var cachedHeight = node.Height;
+            Debug.Assert(node.CalcHeight() == node.Height, "Cached height is not equal to actual height");
+        }
+    }
+
+    public void AssertIsAVLTree()
+    {
+        foreach (var node in Traverse())
+        {
+            var balance = node.GetNodeBalance();
+            Debug.Assert(balance >= -1 && balance <= 1, "Node is not balanced");
         }
     }
 }

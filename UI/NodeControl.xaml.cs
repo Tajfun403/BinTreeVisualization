@@ -127,6 +127,7 @@ namespace BinTreeVisualization.UI
             {
                 field = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(ValToStr));
             } 
         }
 

@@ -41,7 +41,7 @@ public class Node<T> where T : IComparable<T>
     /// <summary>
     /// The node's value
     /// </summary>
-    public T Value { get; init; }
+    public T Value { get; private set; }
 
     /// <summary>
     /// The left child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference./>
@@ -53,7 +53,30 @@ public class Node<T> where T : IComparable<T>
     /// </summary>
     public Node<T> Right { get; private set; } = null;
 
+    /// <summary>
+    /// UI arrow pointing to this node
+    /// </summary>
     public NodeArrow SelfArrow { get; set; } = null;
+
+    /// <summary>
+    /// Cached node height
+    /// </summary>
+    // public int Height { get; private set; } = 1;
+    public int Height
+    {
+        get => field;
+        // get => CalcHeight();
+        private set;
+
+    } = 1;
+
+    /// <summary>
+    /// Refresh node height. To be used after adoptions.
+    /// </summary>
+    public void RefreshHeight()
+    {
+        Height = GetHeight();
+    }
 
     /// <summary>
     /// Internal ctor. Use static method <see cref="CreateRoot{T}(T, BinTree{T})"/> to create a new tree, or <see cref="SpawnChild(T, bool)"/> to spawn a new node.
@@ -258,6 +281,7 @@ public class Node<T> where T : IComparable<T>
         node.MoveTreeToLoc(expectedLoc);
         node.RefreshSelfArrow();
 
+        RefreshHeight();
         return node;
     }
 
@@ -272,6 +296,20 @@ public class Node<T> where T : IComparable<T>
             Left?.DetachFromParent();
         if (OrphanRightChild)
             Right?.DetachFromParent();
+    }
+
+    /// <summary>
+    /// Swap value of this node with value from another one. Does NOT maintain binary tree properties!
+    /// </summary>
+    /// <param name="other"></param>
+    public void SwapValues(Node<T> other)
+    {
+        var temp = other.Value;
+        other.Value = Value;
+        Value = temp;
+
+        this.BackingControl.Value = Value;
+        other.BackingControl.Value = other.Value;
     }
 
     /// <summary>
@@ -305,7 +343,17 @@ public class Node<T> where T : IComparable<T>
     /// <returns>Height of the node</returns>
     public int GetHeight()
     {
-        return 1 + Math.Max(Left?.GetHeight() ?? 0, Right?.GetHeight() ?? 0);
+        return 1 + Math.Max(Left?.Height ?? 0, Right?.Height ?? 0);
+        // return 1 + Math.Max(Left?.GetHeight() ?? 0, Right?.GetHeight() ?? 0);
+    }
+
+    /// <summary>
+    /// Calculate node's height recursively
+    /// </summary>
+    /// <returns>Height of the node</returns>
+    public int CalcHeight()
+    {
+        return 1 + Math.Max(Left?.CalcHeight() ?? 0, Right?.CalcHeight() ?? 0);
     }
 
     /// <summary>
@@ -472,6 +520,20 @@ public class Node<T> where T : IComparable<T>
                 queue.Enqueue(curr.Left);
             if (curr.Right != null)
                 queue.Enqueue(curr.Right);
+        }
+    }
+
+    /// <summary>
+    /// Traverse ancestors of this node in the order parent -> grandparent -> ... -> root
+    /// </summary>
+    /// <returns>Returns IEnumerable that contains this and all parent nodes going from the bottom</returns>
+    public IEnumerable<Node<T>> TraverseAncestors()
+    {
+        var curr = this;
+        while (curr != null)
+        {
+            yield return curr;
+            curr = curr.Parent;
         }
     }
 
