@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace BinTreeVisualization.UI
         private Canvas GetCanvas() => VisualTreeHelper.GetParent(this) as Canvas;
 
         /// <summary>
-        /// Current in UI loc
+        /// Current in-UI location
         /// </summary>
         public Point SelfLoc => GetLocOf(this);
 
@@ -82,9 +83,19 @@ namespace BinTreeVisualization.UI
             set => SetValue(SourceProp, value);
         }
 
+        /// <summary>
+        /// The final target the arrow will point to after animations finish.
+        /// </summary>
         public Point DesiredTarget { get; private set; }
+
+        /// <summary>
+        /// The final source the arrow will point from after animations finish.
+        /// </summary>
         public Point DesiredSource { get; private set; }
 
+        /// <summary>
+        /// Current source dependency prop. Sets control's Canvas position automatically on <see cref="Setter"/>.
+        /// </summary>
         public static readonly DependencyProperty SourceProp =
     DependencyProperty.Register(
         "Source",
@@ -92,6 +103,9 @@ namespace BinTreeVisualization.UI
         typeof(NodeArrow),
         new PropertyMetadata(new Point(0, 0), OnSourceChanged));
 
+        /// <summary>
+        /// Current target dependency prop. Sets control's Canvas position automatically on <see cref="Setter"/>.
+        /// </summary>
         public static readonly DependencyProperty TargetProp =
     DependencyProperty.Register(
         "Target",
@@ -99,6 +113,9 @@ namespace BinTreeVisualization.UI
         typeof(NodeArrow),
         new PropertyMetadata(new Point(0, 0), OnTargetChanged));
 
+        /// <summary>
+        /// Refreshes the arrow's location on the Canvas.
+        /// </summary>
         private static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (NodeArrow)d;
@@ -107,6 +124,10 @@ namespace BinTreeVisualization.UI
                 control.RotateToTarget(newTarget);
             }
         }
+
+        /// <summary>
+        /// Refreshes the arrow's location on the Canvas.
+        /// </summary>
         private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = (NodeArrow)d;
@@ -159,6 +180,7 @@ namespace BinTreeVisualization.UI
         /// </summary>
         /// <param name="target">Absolute location of point to rotate to</param>
         /// <returns>Degrees from source to target</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double GetRotToTarget(Point target)
         {
             return Math.Atan2(target.Y - Source.Y, target.X - Source.X) * 180 / Math.PI;
@@ -170,6 +192,7 @@ namespace BinTreeVisualization.UI
         /// </summary>
         /// <param name="target">Absolute location of point to calculate the distance to</param>
         /// <returns>WPF length units from to the target</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private double GetDistanceTo(Point target)
         {
             return Math.Sqrt(Math.Pow(target.X - Source.X, 2) + Math.Pow(target.Y - Source.Y, 2));
