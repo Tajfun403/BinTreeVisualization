@@ -146,14 +146,17 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         }
     }
 
-    void AddRandomItems(int count)
+    async void AddRandomItems(int count)
     {
+        Stopwatch watch = new();
+        watch.Start();
         Random rand = new();
         for (int i = 0; i < count; i++)
         {
             BinTree.Insert(Double.Round(rand.NextDouble() * 100, 2));
         }
-        BinTree.FinishCurrOperation();
+        await BinTree.FinishCurrOperation();
+        Debug.WriteLine($"Inserting {count} items took {watch.Elapsed} s");
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

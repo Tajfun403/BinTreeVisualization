@@ -366,7 +366,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// Insert <paramref name="value"/> into the tree.
     /// </summary>
     /// <param name="value">The value to insert.</param>
-    public async void Insert(T value)
+    public async Task Insert(T value)
     {
         await OperationGuard();
         Debug.WriteLine($"Inserting {value}");
@@ -386,7 +386,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         VerifyTreeLayout();
     }
 
-    private bool bSkipAnimations { get; set; }
+    public bool bSkipAnimations { get; private set; }
 
     /// <summary>
     /// Delays the execution of the current task if in not-instant context.<para/>
@@ -426,7 +426,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Instantly finish current operation, if any is active.
     /// </summary>
-    public async void FinishCurrOperation()
+    public async Task FinishCurrOperation()
     {
         await OperationGuard();
         FinishOperation();
@@ -700,7 +700,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <inheritdoc cref="BinTreeControl.SetText(string, TextAction)"/>
     private void SetText(string text, TextAction act = TextAction.Base)
     {
-        BackingControl.SetText(text, act);
+        if (!bSkipAnimations)
+            BackingControl.SetText(text, act);
     }
 
     /// <inheritdoc cref="BinTreeControl.ResetText(bool)"/>

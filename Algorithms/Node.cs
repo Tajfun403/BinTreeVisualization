@@ -400,6 +400,8 @@ public class Node<T> where T : IComparable<T>
     /// <param name="bRecursive">Whether to blink the node itself, or the node and all its children as well</param>
     public void Blink(bool bRecursive = false)
     {
+        if (Tree.bSkipAnimations)
+            return;
         if (bRecursive)
             Traverse().ToList().ForEach(x => x.Blink());
         else

@@ -50,3 +50,8 @@ It is mostly a BST tree with added rotations, so a single base class with a `boo
 - This paper also references an easier Wetherell and Shannon algorithm, which has some flaws (as highlighted in the paper), but it also easier to implement
   - Its cons seem to be insignificant enough for this application
   - Also highlighted here: https://willrosenbaum.com/assets/pdf/2023s-cosc-225/tidy-drawings-of-trees.pdf
+
+# Performance
+- Performance in instant mode is being capped by creating and running animations in the background
+  - Especially by arrows whose locations are being computed on each movement.
+- Optimizing for instant mode would require disabling the animations, but it is probably not worth it for the purposes of this application.
