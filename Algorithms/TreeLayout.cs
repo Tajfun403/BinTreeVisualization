@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
@@ -28,13 +29,17 @@ internal class TreeLayout
 
         // layout starts placing all nodes from the left side of the canvas
         // tree needs to be re-centered afterwards
-        tree.Root.MoveTreeToLoc(new(0, 0));
+        tree.Root.MoveTreeToLoc(new(0, 0), true);
+
+        // all movement changes were cached first; apply them now
+        tree.Root.Traverse().ToList().ForEach(x => x.PlayDelayedAnimation());
+        Debug.WriteLine("Auto layout finished");
     }
 
     /// <summary>
     /// Height of the tree
     /// </summary>
-    private int TreeHeight {  get; set; }
+    private int TreeHeight { get; set; }
 
     /// <summary>
     /// A list that holds the last taken X location for each tree's level.<para/>
@@ -109,7 +114,7 @@ internal class TreeLayout
         if (node.IsLeaf())
         {
             x = TakeNextSlot(level);
-            node.MoveToLoc(new(x, y));
+            node.MoveToLoc(new(x, y), true);
             return;
         }
         // place itself according to parents location
@@ -129,12 +134,12 @@ internal class TreeLayout
         }
 
         x = TryTakeLoc(level, x, out double Offset);
-        node.MoveToLoc(new(x, y));
+        node.MoveToLoc(new(x, y), true);
 
         // if one could not put itself in the desired location,
         // move the entire tree by the gotten offset
         if (Offset != 0)
-            node.MoveChildrenByLoc(new(Offset, 0));
+            node.MoveChildrenByLoc(new(Offset, 0), true);
 
         // since children were moved by an offset, the last taken location in the list
         // need to be updated to account for this

@@ -242,7 +242,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         VerifyTreeLayout();
     }
 
-    public void VerifyTreeLayout()
+    public void VerifyTreeLayout(bool fromMiddleOfOperation = false)
     {
         Debug.WriteLine("Verifying tree layout and scale");
         LayoutTree();
@@ -250,10 +250,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     }
 
     /// <summary>
-    /// Swap two nodes in the tree.
+    /// Swap two nodes in the tree and relink their parents in a way so that the binary tree properties are maintained.
     /// </summary>
-    /// <param name="one"></param>
-    /// <param name="other"></param>
+    /// <param name="one">One node</param>
+    /// <param name="other">The other node</param>
     private async Task SwapNodes(Node<T> one, Node<T> other)
     {
         SetText("Swapping nodes:");
@@ -301,6 +301,12 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await ResetText();
     }
 
+    /// <summary>
+    /// Swap nodes' values with animation.
+    /// </summary>
+    /// <param name="one">One node</param>
+    /// <param name="other">The other node</param>
+    /// <returns></returns>
     public async Task SwapValues(Node<T> one, Node<T> other)
     {
         SetText("Swapping nodes:");
@@ -329,14 +335,14 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     public async Task Delete(Node<T> victim)
     {
         TraversalCount++;
-        if (victim.Left is null && victim.Right is null)
+        if (victim.IsLeaf())
         {
             SetText($"Deleting leaf {victim.Value}");
 
             if (victim == Root)
                 Root = null!;
 
-            TraversalCount += 2;
+            TraversalCount++;
             var victimsParentSquare = victim.Parent?.Parent;
             var victimParent = victim.Parent;
 
@@ -375,19 +381,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await SwapValues(victim, successor);
         (victim, successor) = (successor, victim);
 
-        var parent = victim.Parent;
         await Delete(victim);
-/*        successor.TraverseAncestors().ToList().ForEach(async x => {
-            TraversalCount++;
-            x.RefreshHeight();
-            // await BalanceTreeIfNeeded(x);
-        });
-        if (parent != null)
-            parent.TraverseAncestors().ToList().ForEach(async x => {
-                TraversalCount++;
-                x.RefreshHeight();
-                // await BalanceTreeIfNeeded(x);
-            });*/
 
         return;
     }
@@ -426,7 +420,17 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         VerifyTreeLayout();
     }
 
-    public bool bSkipAnimations { get; private set; }
+    public bool bSkipAnimations
+    {
+        get; private set
+        {
+            field = value;
+            OnInstantModeFinished?.Invoke();
+        }
+    } = false;
+
+    public delegate void OnInstantModeFinishedFunc();
+    public event OnInstantModeFinishedFunc OnInstantModeFinished;
 
     /// <summary>
     /// Delays the execution of the current task if in not-instant context.<para/>
@@ -534,22 +538,32 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         {
             SetText($"Empty leaf; inserting into it");
             var child = currNode.SpawnChild(value, true);
-            // VerifyTreeLayout();
+            currNode.RefreshHeight();
             currNode.Deactivate();
             await Delay(1000);
             child.Deactivate();
-            currNode.RefreshHeight();
+            // layouting here throws "Exception thrown: 'System.ArgumentOutOfRangeException' in System.Private.CoreLib.dll"
+            // with no stack trace in the debug log and doesn't print anything else
+            // VerifyTreeLayout(true);
+
+/*            Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                VerifyTreeLayout(true);
+            });*/
             return currNode.Left!;
         }
         else if (!bGoLeft && currNode.Right is null)
         {
             SetText($"Empty leaf; inserting into it");
             var child = currNode.SpawnChild(value, false);
-            // VerifyTreeLayout();
+            currNode.RefreshHeight();
             currNode.Deactivate();
             await Delay(1000);
             child.Deactivate();
-            currNode.RefreshHeight();
+            // layouting here throws "Exception thrown: 'System.ArgumentOutOfRangeException' in System.Private.CoreLib.dll"
+            // with no stack trace in the debug log and doesn't print anything else
+            // VerifyTreeLayout(true);
             return currNode.Right!;
         }
 
@@ -559,7 +573,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         nextNode.Blink(true);
         await Delay(1000);
         var ret = await Insert(value, bGoLeft ? currNode.Left : currNode.Right);
-
+        // VerifyTreeLayout(true);
 
         // return ret;
 
@@ -620,6 +634,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         child.ActivateBlue(true);
         await Delay(1500);
         parent.AdoptChild(child);
+        // VerifyTreeLayout(true);
         await Delay(1500);
         parent.Deactivate();
         child.DeactivateBlue(true);
@@ -725,7 +740,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         middleChild?.RefreshHeight();
         parent?.RefreshHeight();
 
-        // VerifyTreeLayout();
+        VerifyTreeLayout(true);
 
         return middleChild;
     }

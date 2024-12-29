@@ -124,18 +124,21 @@ public class Node<T> where T : IComparable<T>
         if (bLeft)
         {
             Left = node;
-            node.RefreshSelfArrow();
         }
         else
         {
             Right = node; 
-            node.RefreshSelfArrow();
         }
+        node.RefreshSelfArrow();
         node.Activate();
 
         return node;
     }
 
+    /// <summary>
+    /// Whether the node is a leaf (i.e. has no children)
+    /// </summary>
+    /// <returns>Whether the node is a leaf (i.e. has no children)</returns>
     public bool IsLeaf() => Left is null && Right is null;
 
     public const int ToBottomOffset = 70;
@@ -459,30 +462,46 @@ public class Node<T> where T : IComparable<T>
     /// <summary>
     /// Move the associated node control to a location and make its all its children follow it.
     /// </summary>
-    /// <param name="loc"></param>
-    public void MoveTreeToLoc(Point loc)
+    /// <param name="loc">Final location to move the node to</param>
+    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
+    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
+    public void MoveTreeToLoc(Point loc, bool bDelayAnimation = false)
     {
         var LocDelta = new Point(loc.X - DesiredLoc.X, loc.Y - DesiredLoc.Y);
-        Traverse().ToList().ForEach(x => x.MoveByLoc(LocDelta));
+        Traverse().ToList().ForEach(x => x.MoveByLoc(LocDelta, bDelayAnimation));
     }
 
-    public void MoveTreeByLoc(Point loc)
+    /// <summary>
+    /// Move the associated node control by a delta location and make its all its children follow it.
+    /// </summary>
+    /// <param name="deltaLoc">Delta location to move the tree by</param>
+    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
+    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
+    public void MoveTreeByLoc(Point deltaLoc, bool bDelayAnimation = false)
     {
-        Traverse().ToList().ForEach(x => x.MoveByLoc(loc));
-    
+        Traverse().ToList().ForEach(x => x.MoveByLoc(deltaLoc, bDelayAnimation));
     }
-    public void MoveChildrenByLoc(Point loc)
+
+    /// <summary>
+    /// Move all the children of this node (but NOT this node itself) by a delta location.
+    /// </summary>
+    /// <param name="deltaLoc">Delta location to move the tree by</param>
+    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation 
+    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
+    public void MoveChildrenByLoc(Point deltaLoc, bool bDelayAnimation = false)
     {
         // for some reason Traverse().Where(x => x != this) throws type constraint exception
-        Left?.Traverse().ToList().ForEach(x => x.MoveByLoc(loc));
-        Right?.Traverse().ToList().ForEach(x => x.MoveByLoc(loc));
+        Left?.Traverse().ToList().ForEach(x => x.MoveByLoc(deltaLoc, bDelayAnimation));
+        Right?.Traverse().ToList().ForEach(x => x.MoveByLoc(deltaLoc, bDelayAnimation));
     }
 
     /// <summary>
     /// Move the associated node control by a specified amount
     /// </summary>
-    /// <param name="loc"></param>
-    public void MoveByLoc(Point loc)
+    /// <param name="loc">Final location to move the node to</param>
+    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation 
+    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
+    public void MoveByLoc(Point loc, bool bDelayAnimation = false)
     {
         var newLoc = new Point(DesiredLoc.X + loc.X, DesiredLoc.Y + loc.Y);
         MoveToLoc(newLoc);
@@ -492,16 +511,56 @@ public class Node<T> where T : IComparable<T>
     /// Move the associated node control to specified location over 0.5 seconds
     /// </summary>
     /// <param name="loc">Location to move to</param>
-    public void MoveToLoc(Point loc)
+    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
+    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
+    public void MoveToLoc(Point loc, bool bDelayAnimation = false)
     {
         if (loc == DesiredLoc)
             return;
-        Debug.WriteLine($"Moving {this} from {DesiredLoc} to {loc}");
+
+        if (Tree.bSkipAnimations || bDelayAnimation)
+        {
+            Debug.WriteLine($"Caching movement of {{{this}}} from {DesiredLoc} to {loc}");
+            DesiredLoc = loc;
+            if (!HasCachedDesiredLoc)
+            {
+                HasCachedDesiredLoc = true;
+                Tree.OnInstantModeFinished += PlayDelayedAnimation;
+            }
+        }
+        else
+        {
+            MoveToLocWithAnim(loc);
+        }
+    }
+
+    private bool HasCachedDesiredLoc { get; set; } = false;
+
+    /// <summary>
+    /// Move the associated node control to specified location over 0.5 seconds. Always play the animation - regardless of instant mode or others.
+    /// </summary>
+    /// <param name="loc">Location to move to</param>
+    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation until <see cref="PlayDelayedAnimation"/> is called.</param>
+    public void MoveToLocWithAnim(Point loc, bool bDelayAnimation = false)
+    {
+        Debug.WriteLine($"Moving {{{this}}} from {DesiredLoc} to {loc}");
         DesiredLoc = loc;
         BackingControl.MoveToLoc(loc);
         RefreshSelfArrow();
         Left?.RefreshSelfArrow();
         Right?.RefreshSelfArrow();
+    }
+
+    /// <summary>
+    /// Play cached animation now. Reset the cache state.
+    /// </summary>
+    public void PlayDelayedAnimation()
+    {
+        if (!HasCachedDesiredLoc)
+            return;
+        MoveToLoc(DesiredLoc);
+        HasCachedDesiredLoc = false;
+        Tree.OnInstantModeFinished -= PlayDelayedAnimation;
     }
 
     /// <summary>
@@ -545,7 +604,7 @@ public class Node<T> where T : IComparable<T>
             parts.Add($"left -> {Left.Value}");
         if (Right is not null)
             parts.Add($"right -> {Right.Value}");
-        if (Left is null && Right is null)
+        if (IsLeaf())
             parts.Add("no children");
         return String.Join("; ", parts);
     }
