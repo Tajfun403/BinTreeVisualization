@@ -303,16 +303,6 @@ namespace BinTreeVisualization.UI
             DesiredSource = newSource;
         }
 
-        public void MoveSourceTo(NodeControl node)
-        {
-            MoveSourceToLoc(node.GetLowerArrowSocket());
-        }
-
-        public void MoveTargetTo(NodeControl node)
-        {
-            MoveTargetToLoc(node.GetUpperArrowSocket());
-        }
-
         /// <summary>
         /// Repoint the target's location to new loc in a 0.5s animation.
         /// </summary>

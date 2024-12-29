@@ -9,6 +9,9 @@ using System.Windows;
 
 namespace BinTreeVisualization.UI;
 
+/// <summary>
+/// Helps to setup the title bar color of a window.
+/// </summary>
 internal class TitleBarHelper
 {
     // https://stackoverflow.com/a/62811758
@@ -40,6 +43,11 @@ internal class TitleBarHelper
         return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= build;
     }
 
+    /// <summary>
+    /// Enable dark mode for the window's title bar
+    /// </summary>
+    /// <param name="window"></param>
+    /// <returns>Whether the change was successful</returns>
     public static bool EnableDarkMode(Window window)
     {
         var wih = new System.Windows.Interop.WindowInteropHelper(window);

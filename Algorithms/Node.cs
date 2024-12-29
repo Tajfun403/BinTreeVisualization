@@ -16,12 +16,11 @@ using BinTreeVisualization.UI;
 namespace BinTreeVisualization.Algorithms;
 
 
-public class Node<T> where T : IComparable<T>
+public partial class Node<T> where T : IComparable<T>
 {
     /// <summary>
-    /// Backing element placed in the UI
+    /// Node's tree
     /// </summary>
-    public NodeControl BackingControl { get; set; }
     private BinTree<T> Tree { get; init; }
 
     /// <summary>
@@ -54,14 +53,8 @@ public class Node<T> where T : IComparable<T>
     public Node<T> Right { get; private set; } = null;
 
     /// <summary>
-    /// UI arrow pointing to this node
-    /// </summary>
-    public NodeArrow SelfArrow { get; set; } = null;
-
-    /// <summary>
     /// Cached node height
     /// </summary>
-    // public int Height { get; private set; } = 1;
     public int Height
     {
         get => field;
@@ -87,25 +80,6 @@ public class Node<T> where T : IComparable<T>
     {
         Value = value;
         this.Tree = tree;
-    }
-
-    /// <summary>
-    /// Refresh the arrow pointing to this node to account for changes in parents
-    /// </summary>
-    public void RefreshSelfArrow()
-    {
-        if (Parent is null)
-        {
-            SelfArrow?.RemoveSelf();
-            SelfArrow = null;
-            return;
-        }
-        else if (SelfArrow is null)
-        {
-            SelfArrow = Parent.CreateArrowTo(this);
-        }
-        SelfArrow?.MoveTargetToLoc(DesiredLoc);
-        SelfArrow?.MoveSourceToLoc(Parent.DesiredLoc);
     }
 
     /// <summary>
@@ -141,29 +115,6 @@ public class Node<T> where T : IComparable<T>
     /// <returns>Whether the node is a leaf (i.e. has no children)</returns>
     public bool IsLeaf() => Left is null && Right is null;
 
-    public const int ToBottomOffset = 70;
-    // public const int ToBottomOffset = 70;
-    // public const int ToSideOffset = 150;
-    public const int ToSideOffset = 100;
-    public double CurrWidth => BackingControl.Width;
-    public double CurrHeight => BackingControl.Height;
-    public const double NodeWidth = 120;
-    public const double NodeHeight = 70;
-
-    /// <summary>
-    /// Desired location of the node. Might be either the current location, or the location the new will finish at once its animation end. <para/>
-    /// Use <see cref="MoveToLoc(Point)"/> to move the node to a new location.
-    /// </summary>
-    public Point DesiredLoc { get; private set; }
-
-    /// <summary>
-    /// Current location of the node in the UI. Might be volatile because it is affected by animations.<para/>
-    /// Use <see cref="DesiredLoc"/> for location-related operations.
-    /// </summary>
-    public Point CurrLoc => GetLocOf(BackingControl);
-
-    private static Point GetLocOf(NodeControl control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
-
     /// <summary>
     /// Create a root node to start a new tree.
     /// </summary>
@@ -182,41 +133,6 @@ public class Node<T> where T : IComparable<T>
         parent.GetCanvas().Children.Add(el);
         el.Activate();
         return newNode;
-    }
-
-    /// <summary>
-    /// Create a new UI element for a node and add it to the <see cref="Canvas"/>
-    /// </summary>
-    /// <param name="value">Value of the new node</param>
-    /// <param name="bLeft">Whether to prepare the child on parent's left side.</param>
-    /// <returns>The created UI element.</returns>
-    private NodeControl CreateUIElem(T value, bool bLeft)
-    {
-        NodeControl el = new(value);
-        Point oldLoc = DesiredLoc;
-        Point newLoc = new(oldLoc.X + (bLeft ? -ToSideOffset : ToSideOffset), oldLoc.Y + ToBottomOffset);
-        Canvas.SetLeft(el, newLoc.X);
-        Canvas.SetTop(el, newLoc.Y);
-        Tree.GetCanvas().Children.Add(el);
-        return el;
-    }
-
-    /// <summary>
-    /// Create a UI arrow from this node pointing to another node, add it to <see cref="Canvas"/>, and return it.
-    /// </summary>
-    /// <param name="node"></param>
-    /// <returns>The created UI element.</returns>
-    private NodeArrow CreateArrowTo(Node<T> node)
-    {
-        NodeArrow arrow = new();
-        arrow.Target = node.DesiredLoc;
-        arrow.Source = this.DesiredLoc;
-
-        Canvas.SetLeft(arrow, this.DesiredLoc.X);
-        Canvas.SetTop(arrow, this.DesiredLoc.Y);
-
-        Tree.GetCanvas().Children.Add(arrow);
-        return arrow;
     }
 
     /// <summary>
@@ -356,7 +272,7 @@ public class Node<T> where T : IComparable<T>
     /// <returns>Height of the node</returns>
     public int CalcHeight()
     {
-        return 1 + Math.Max(Left?.CalcHeight() ?? 0, Right?.CalcHeight() ?? 0);
+        return 1 + Math.Max(Left?.Height ?? 0, Right?.Height ?? 0);
     }
 
     /// <summary>
@@ -372,7 +288,7 @@ public class Node<T> where T : IComparable<T>
     /// Get the node at a relative position to the right from the current node, as if all nodes on this level were taken.<para/>
     /// Returns null if the spot at this location is empty.
     /// </summary>
-    /// <param name="toRight"></param>
+    /// <param name="toRight">Relative amount of node-slots to the right</param>
     /// <returns></returns>
     public Node<T> GetRelativeNode(int toRight)
     {
@@ -382,185 +298,6 @@ public class Node<T> where T : IComparable<T>
         if (searchedIdx < 0 || searchedIdx >= row.Count)
             return null;
         return row[searchedIdx];
-    }
-
-    public void Reposition(bool bIntoRight)
-    {
-        var row = Tree.GetRow(GetDepth());
-
-        // I am a problematic node
-        // check if I am within NodeWidth of any nodes in my row
-
-        bool bOverlapping = row.Any(n => Math.Abs(n.CurrLoc.X - CurrLoc.X) < ToSideOffset);
-        if (!bOverlapping)
-            return;
-
-        // overlapping
-        if (bIntoRight)
-        {
-            // I want to insert myself into right, where space is taken
-            // I need to be to the right of my parent, so I try to move my entire parent and its subtree to the left
-
-        }
-    }
-
-    /// <summary>
-    /// Highlight the associated node in the UI
-    /// </summary>
-    public void Activate()
-    {
-        BackingControl.Activate();
-    }
-
-    /// <summary>
-    /// Remove highlight of the associated UI node
-    /// </summary>
-    public void Deactivate()
-    {
-        BackingControl.Deactivate();
-    }
-
-    public void HighlightBlue()
-    {
-        BackingControl.HighlightBlue();
-    }
-
-    public void ActivateBlue(bool bRecursive = false)
-    {
-        if (bRecursive)
-        {
-            Traverse().ToList().ForEach(x => x.ActivateBlue());
-        }
-        else
-            BackingControl.ActivateBlue();
-    }
-
-    public void DeactivateBlue(bool bRecursive = false)
-    {
-        if (bRecursive)
-        {
-            Traverse().ToList().ForEach(x => x.DeactivateBlue());
-        }
-        else
-            BackingControl.DeactivateBlue();
-    }
-
-    /// <summary>
-    /// Blink the node's UI control in blue
-    /// </summary>
-    /// <param name="bRecursive">Whether to blink the node itself, or the node and all its children as well</param>
-    public void Blink(bool bRecursive = false)
-    {
-        if (Tree.bSkipAnimations)
-            return;
-        if (bRecursive)
-            Traverse().ToList().ForEach(x => x.Blink());
-        else
-            BackingControl.Blink();
-    }
-
-    /// <summary>
-    /// Move the associated node control to a location and make its all its children follow it.
-    /// </summary>
-    /// <param name="loc">Final location to move the node to</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
-    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
-    public void MoveTreeToLoc(Point loc, bool bDelayAnimation = false)
-    {
-        var LocDelta = new Point(loc.X - DesiredLoc.X, loc.Y - DesiredLoc.Y);
-        Traverse().ToList().ForEach(x => x.MoveByLoc(LocDelta, bDelayAnimation));
-    }
-
-    /// <summary>
-    /// Move the associated node control by a delta location and make its all its children follow it.
-    /// </summary>
-    /// <param name="deltaLoc">Delta location to move the tree by</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
-    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
-    public void MoveTreeByLoc(Point deltaLoc, bool bDelayAnimation = false)
-    {
-        Traverse().ToList().ForEach(x => x.MoveByLoc(deltaLoc, bDelayAnimation));
-    }
-
-    /// <summary>
-    /// Move all the children of this node (but NOT this node itself) by a delta location.
-    /// </summary>
-    /// <param name="deltaLoc">Delta location to move the tree by</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation 
-    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
-    public void MoveChildrenByLoc(Point deltaLoc, bool bDelayAnimation = false)
-    {
-        // for some reason Traverse().Where(x => x != this) throws type constraint exception
-        Left?.Traverse().ToList().ForEach(x => x.MoveByLoc(deltaLoc, bDelayAnimation));
-        Right?.Traverse().ToList().ForEach(x => x.MoveByLoc(deltaLoc, bDelayAnimation));
-    }
-
-    /// <summary>
-    /// Move the associated node control by a specified amount
-    /// </summary>
-    /// <param name="loc">Final location to move the node to</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation 
-    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
-    public void MoveByLoc(Point loc, bool bDelayAnimation = false)
-    {
-        var newLoc = new Point(DesiredLoc.X + loc.X, DesiredLoc.Y + loc.Y);
-        MoveToLoc(newLoc);
-    }
-
-    /// <summary>
-    /// Move the associated node control to specified location over 0.5 seconds
-    /// </summary>
-    /// <param name="loc">Location to move to</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
-    /// until <see cref="PlayDelayedAnimation"/> is called.</param>
-    public void MoveToLoc(Point loc, bool bDelayAnimation = false)
-    {
-        if (loc == DesiredLoc)
-            return;
-
-        if (Tree.bSkipAnimations || bDelayAnimation)
-        {
-            Debug.WriteLine($"Caching movement of {{{this}}} from {DesiredLoc} to {loc}");
-            DesiredLoc = loc;
-            if (!HasCachedDesiredLoc)
-            {
-                HasCachedDesiredLoc = true;
-                Tree.OnInstantModeFinished += PlayDelayedAnimation;
-            }
-        }
-        else
-        {
-            MoveToLocWithAnim(loc);
-        }
-    }
-
-    private bool HasCachedDesiredLoc { get; set; } = false;
-
-    /// <summary>
-    /// Move the associated node control to specified location over 0.5 seconds. Always play the animation - regardless of instant mode or others.
-    /// </summary>
-    /// <param name="loc">Location to move to</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation until <see cref="PlayDelayedAnimation"/> is called.</param>
-    public void MoveToLocWithAnim(Point loc, bool bDelayAnimation = false)
-    {
-        Debug.WriteLine($"Moving {{{this}}} from {DesiredLoc} to {loc}");
-        DesiredLoc = loc;
-        BackingControl.MoveToLoc(loc);
-        RefreshSelfArrow();
-        Left?.RefreshSelfArrow();
-        Right?.RefreshSelfArrow();
-    }
-
-    /// <summary>
-    /// Play cached animation now. Reset the cache state.
-    /// </summary>
-    public void PlayDelayedAnimation()
-    {
-        if (!HasCachedDesiredLoc)
-            return;
-        MoveToLoc(DesiredLoc);
-        HasCachedDesiredLoc = false;
-        Tree.OnInstantModeFinished -= PlayDelayedAnimation;
     }
 
     /// <summary>
@@ -612,16 +349,16 @@ public class Node<T> where T : IComparable<T>
     /// <summary>
     /// Compare nodes value-wise
     /// </summary>
-    /// <param name="self"></param>
-    /// <param name="other"></param>
+    /// <param name="self">Left item to compare</param>
+    /// <param name="other">Right item to compare</param>
     /// <returns>Whether the value of left is smaller than the value of right</returns>
     public static bool operator <(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) < 0;
 
     /// <summary>
     /// Compare nodes value-wise
     /// </summary>
-    /// <param name="self"></param>
-    /// <param name="other"></param>
+    /// <param name="self">Left item to compare</param>
+    /// <param name="other">Right item to compare</param>
     /// <returns>Whether the value of left is bigger than the value of right</returns>
     public static bool operator >(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) > 0;
 
@@ -634,16 +371,16 @@ public class Node<T> where T : IComparable<T>
     /// <summary>
     /// Compare nodes value-wise
     /// </summary>
-    /// <param name="self"></param>
-    /// <param name="other"></param>
+    /// <param name="self">Left item to compare</param>
+    /// <param name="other">Right item to compare</param>
     /// <returns>Whether the value of left is smaller or equals to the value of right</returns>
     public static bool operator <=(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) <= 0;
 
     /// <summary>
     /// Compare nodes value-wise
     /// </summary>
-    /// <param name="self"></param>
-    /// <param name="other"></param>
+    /// <param name="self">Left item to compare</param>
+    /// <param name="other">Right item to compare</param>
     /// <returns>Whether the value of left is bigger or equals to the value of right</returns>
     public static bool operator >=(Node<T> self, Node<T> other) => self.Value.CompareTo(other.Value) >= 0;
 
@@ -656,7 +393,7 @@ public class Node<T> where T : IComparable<T>
     /// <summary>
     /// Get or set a node by its side
     /// </summary>
-    /// <param name="side"></param>
+    /// <param name="side">The side</param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public Node<T> this[Side side]
@@ -709,6 +446,12 @@ internal static class NodeExtension
         _ => throw new ArgumentOutOfRangeException(nameof(side), side, null)
     };
 
+    /// <summary>
+    /// Convert a bool <paramref name="bIsLeft"/> to a side.
+    /// </summary>
+    /// <param name="side"></param>
+    /// <param name="bIsLeft"></param>
+    /// <returns></returns>
     internal static Side FromIsLeft(this Side side, bool bIsLeft) => bIsLeft ? Side.Left : Side.Right;
 }
 

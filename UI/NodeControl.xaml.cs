@@ -47,31 +47,49 @@ namespace BinTreeVisualization.UI
 
         public static Color RedColor => Color.FromArgb(255, 225, 60, 60);
 
+        /// <summary>
+        /// Highlight the node in the UI
+        /// </summary>
         public void Activate()
         {
             BeginStoryboard((Storyboard)FindResource("AnimActivate"));
         }
 
+        /// <summary>
+        /// Remove highlight of the UI node
+        /// </summary>
         public void Deactivate()
         {
             BeginStoryboard((Storyboard)FindResource("AnimDeactivate"));
         }
 
+        /// <summary>
+        /// Briefly blink the node's borders in blue.
+        /// </summary>
         public void Blink()
         {
             BeginStoryboard((Storyboard)FindResource("AnimBlink"));
         }
 
+        /// <summary>
+        /// Highlight the node in blue
+        /// </summary>
         public void HighlightBlue()
         {
             BeginStoryboard((Storyboard)FindResource("AnimHighlightBlue"));
         }
 
+        /// <summary>
+        /// Remove the blue highlight from the node
+        /// </summary>
         public void DeactivateBlue()
         {
             BeginStoryboard((Storyboard)FindResource("AnimDeactivateBlue"));
         }
 
+        /// <summary>
+        /// Highlight the node in blue in the UI
+        /// </summary>
         public void ActivateBlue()
         {
             BeginStoryboard((Storyboard)FindResource("AnimActivateBlue"));
@@ -110,16 +128,9 @@ namespace BinTreeVisualization.UI
             storyboard.Begin();
         }
 
-        public Point GetUpperArrowSocket()
-        {
-            return new Point(CurrLoc.X + Width / 2, CurrLoc.Y);
-        }
-
-        public Point GetLowerArrowSocket()
-        {
-            return new Point(CurrLoc.X + Width / 2, CurrLoc.Y + Height);
-        }
-
+        /// <summary>
+        /// Node's value
+        /// </summary>
         public object Value
         {
             get;
@@ -137,6 +148,9 @@ namespace BinTreeVisualization.UI
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        /// <summary>
+        /// Node's value as string. To be bound to the UI content.
+        /// </summary>
         public string ValToStr => Value.ToString() ?? "null";
     }
 }

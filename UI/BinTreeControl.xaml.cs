@@ -29,9 +29,15 @@ public partial class BinTreeControl : UserControl
         InitializeComponent();
     }
 
-    private double CanvasDesiredScaleInverse = 1.0;
+    /// <summary>
+    /// Current canvas desired scale after animations are finished.
+    /// </summary>
     private double CanvasDesiredScale = 1.0;
 
+    /// <summary>
+    /// Set the canvas scale with an animation.
+    /// </summary>
+    /// <param name="newScale"></param>
     public void SetScaleAnim(double newScale)
     {
         Debug.WriteLine($"Setting tree scale to {newScale}");
@@ -40,10 +46,26 @@ public partial class BinTreeControl : UserControl
         CanvasDesiredScale = newScale;
     }
 
+    /// <summary>
+    /// Unused.
+    /// </summary>
     private double RescaleMultiplier = 1.3;
+
+    /// <summary>
+    /// Minimum scale of the tree. Do not make it smaller than that.
+    /// </summary>
     private double MinScale = 1;
 
+    /// <summary>
+    /// The amount of real space that the tree can accumulate at the current scale.
+    /// </summary>
     private double currVirtualWidth => this.ActualWidth / CanvasDesiredScale;
+
+    /// <summary>
+    /// Check whether a new scale is needed for all elements to fit.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="tree">The tree</param>
     public void VerifyScale<T>(BinTree<T> tree) where T : IComparable<T>
     {
         var newScale = GetNewScale(tree);
@@ -51,6 +73,12 @@ public partial class BinTreeControl : UserControl
         SetScaleAnim(newScale);
     }
 
+    /// <summary>
+    /// Get the new scale for the tree to fit the window.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="tree">The tree</param>
+    /// <returns>A new scale for the canvas</returns>
     private double GetNewScale<T>(BinTree<T> tree) where T : IComparable<T>
     {
         var treeWidth = GetNodesTotalWidth(tree);
@@ -64,6 +92,12 @@ public partial class BinTreeControl : UserControl
         return 1 / scaleMult;
     }
 
+    /// <summary>
+    /// Get the maximum spread between the westmost and the eastmost nodes.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="tree">The tree</param>
+    /// <returns>Spread of the tree, rounded up so that the tree stays symmetrical.</returns>
     private double GetNodesTotalWidth<T>(BinTree<T> tree) where T : IComparable<T>
     {
         var nodes = tree.Traverse();
@@ -109,7 +143,7 @@ public partial class BinTreeControl : UserControl
     /// Auto layout the tree, allocating double the space for every next row. Does not account for empty branches.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="tree"></param>
+    /// <param name="tree">The tree</param>
     public void LayoutTreeNSquare<T>(BinTree<T> tree) where T : IComparable<T>
     {
         int maxHeight = tree.Height;
@@ -135,74 +169,6 @@ public partial class BinTreeControl : UserControl
         }
 
         Traverse(tree.Root);
-    }
-
-    /// <summary>
-    /// Attempts to layout the tree in such a way that nodes are evenly spaced out accounting for empty branches.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="tree"></param>
-    public void LayoutTree<T>(BinTree<T> tree) where T : IComparable<T>
-    {
-        float nodeWidth = Node<T>.ToSideOffset;
-        float levelHeight = Node<T>.ToBottomOffset;
-
-        // Helper function to calculate positions and bounds of subtrees
-        // This will also return the width of the subtree for dynamic layout
-        (float leftBound, float rightBound, float subtreeWidth) Traverse(Node<T> curr, float x, float y)
-        {
-            if (curr == null)
-                return (x, x, 0); // No node, no width
-
-            // Calculate the bounds for the left and right subtrees
-            float leftBound = x, rightBound = x;
-            float leftWidth = 0, rightWidth = 0;
-
-            if (curr.Left != null)
-            {
-                var (leftLeft, leftRight, leftSubtreeWidth) = Traverse(
-                    curr.Left,
-                    x - nodeWidth - leftWidth, // Offset for left subtree
-                    y + levelHeight // Move down a level
-                );
-                leftBound = leftLeft;
-                leftWidth = leftSubtreeWidth;
-            }
-
-            if (curr.Right != null)
-            {
-                var (rightLeft, rightRight, rightSubtreeWidth) = Traverse(
-                    curr.Right,
-                    x + nodeWidth + rightWidth, // Offset for right subtree
-                    y + levelHeight // Move down a level
-                );
-                rightBound = rightRight;
-                rightWidth = rightSubtreeWidth;
-            }
-
-            // Calculate the total width of the subtree at the current node
-            float subtreeWidth = leftWidth + nodeWidth + rightWidth;
-
-            // Determine the center position of the current node
-            float midX = (leftBound + rightBound) / 2;
-
-            // If it's the root node, ensure it stays at (0, 0)
-            if (curr == tree.Root)
-            {
-                midX = 0;
-            }
-
-            // Move the current node to the calculated position
-            curr.MoveToLoc(new(midX, y));
-            Debug.WriteLine($"Node {curr.Value} moved to ({midX}, {y})");
-
-            // Return the left and right bounds and the total width of the subtree
-            return (Math.Min(leftBound, midX), Math.Max(rightBound, midX), subtreeWidth);
-        }
-
-        // Start the layout from the root node, which is fixed at (0, 0)
-
-       Traverse(tree.Root, 0, 0); // Start with the root at (0, 0)
     }
 
 }

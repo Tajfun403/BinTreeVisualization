@@ -40,8 +40,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <returns></returns>
     public Canvas GetCanvas() => BackingControl.MainCanvas;
 
+    /// <summary>
+    /// Tree's height.
+    /// </summary>
     public int Height => GetHeight();
-    public int LastHeight { get; private set; }
 
     /// <summary>
     /// Get the tree's height
@@ -56,8 +58,16 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     private int ComparisonsCount = 0;
     private int TraversalCount = 0;
 
+    /// <summary>
+    /// Statistics on how many operations did each operation on the tree require.
+    /// </summary>
     public TreeStats Stats { get; private set; } = new();
 
+    /// <summary>
+    /// Coalesce gathered statistics into an <see cref="OperationStats"/> with the specified <paramref name="type"/> and append to the tree's <see cref="Stats"/>.<para/>
+    /// Resets current operation's stats.
+    /// </summary>
+    /// <param name="type"></param>
     private void FinishOperationStats(OperationType type)
     {
         var statsEntry = new OperationStats(ComparisonsCount, TraversalCount, Traverse().ToList().Count);
@@ -417,9 +427,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         }
         FinishOperation();
         FinishOperationStats(OperationType.Insert);
-        VerifyTreeLayout();
     }
 
+    /// <summary>
+    /// Whether or not to skip animations and perform operations instantly.
+    /// </summary>
     public bool bSkipAnimations
     {
         get; private set
@@ -429,7 +441,14 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         }
     } = false;
 
+    /// <summary>
+    /// Signature for <see cref="OnInstantModeFinished"/>
+    /// </summary>
     public delegate void OnInstantModeFinishedFunc();
+
+    /// <summary>
+    /// Event that is invoked when <see cref="bSkipAnimations"/> is switched back to false.
+    /// </summary>
     public event OnInstantModeFinishedFunc OnInstantModeFinished;
 
     /// <summary>
@@ -534,6 +553,14 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         SetText(s);
         await Delay(1000);
 
+        if (currNode.Value.CompareTo(value) == 0)
+        {
+            SetText($"Value already exists in the tree", TextAction.Violet);
+            await Delay(2000);
+            await ResetText();
+            currNode.Deactivate();
+            return currNode;
+        }
         if (bGoLeft && currNode.Left is null)
         {
             SetText($"Empty leaf; inserting into it");
@@ -620,15 +647,21 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         SetText($"{parent.Value} adopts {child.Value}");
         SetText($"Parent is {parent.Value}", TextAction.Violet);
         SetText($"Child is {child.Value}", TextAction.Blink);
-        parent.Activate();
-        child.ActivateBlue(true);
-        await Delay(1500);
+        if (!bSkipAnimations)
+        {
+            parent.Activate();
+            child.ActivateBlue(true);
+            await Delay(1500);
+        }
         parent.AdoptChild(child);
         // VerifyTreeLayout(true);
-        await Delay(1500);
-        parent.Deactivate();
-        child.DeactivateBlue(true);
-        await ResetText();
+        if (!bSkipAnimations)
+        {
+            await Delay(1500);
+            parent.Deactivate();
+            child.DeactivateBlue(true);
+            await ResetText();
+        }
     }
 
     /// <summary>
@@ -768,6 +801,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         await BackingControl.ResetText(!bSkipAnimations);
     }
 
+    /// <summary>
+    /// Whether to layout the tree in a square manner.
+    /// </summary>
     bool bLayoutNSquare = false;
 
     /// <summary>
@@ -798,6 +834,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         return Root?.Traverse() ?? [];
     }
 
+    /// <summary>
+    /// Get a list of all rows in the tree with their depths.
+    /// </summary>
+    /// <returns>A list of all rows in the tree with their depths.</returns>
     public List<BinTreeRow<T>> GetRows()
     {
         var nodes = Traverse().ToList();
@@ -806,14 +846,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         return rows;
     }
 
-    public List<BinTreeRow<T>> Rows { get; private set; }
-
     /// <summary>
     /// Whether or not to perform AVL tree rotations.
     /// </summary>
     public bool PerformRotations { get; set; } = true;
-
-    private void RefreshRowsCache() => Rows = GetRows();
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -822,6 +858,11 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    /// <summary>
+    /// Get a row of nodes at the specified depth.
+    /// </summary>
+    /// <param name="Depth">The depth</param>
+    /// <returns>A list of all nodes at the specified depth.</returns>
     public List<Node<T>> GetRow(int Depth)
     {
         List<Node<T>> result = new();
@@ -849,13 +890,13 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     }
 
     /// <summary>
-    /// Assert <see cref="AssertNoOrphans"/> and <see cref="AssertIsBinaryTree"/>
+    /// Assert that the tree is valid.
     /// </summary>
     public void AssertTreeIsValid()
     {
         AssertNoOrphans();
         AssertIsBinaryTree();
-        AssertCachedHeigths();
+        AssertCachedHeights();
         // AssertIsAVLTree();
     }
 
@@ -885,7 +926,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         }
     }
 
-    public void AssertCachedHeigths()
+    /// <summary>
+    /// Assert that call cached heights are correct with the real heights.
+    /// </summary>
+    public void AssertCachedHeights()
     {
         foreach (var node in Traverse())
         {
@@ -895,6 +939,9 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         }
     }
 
+    /// <summary>
+    /// Assert that it is a correct AVL tree, i.e. at no point is branch balance more than 1.
+    /// </summary>
     public void AssertIsAVLTree()
     {
         foreach (var node in Traverse())
@@ -937,4 +984,10 @@ public static class TextActionColors
     }
 }
 
+/// <summary>
+/// A row in the binary tree, containing the tier and the nodes on that tier.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <param name="Tier">Tier</param>
+/// <param name="Nodes">All nodes in that tier</param>
 public record struct BinTreeRow<T>(int Tier, List<Node<T>> Nodes) where T : IComparable<T>;

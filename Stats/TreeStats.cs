@@ -14,8 +14,19 @@ namespace BinTreeVisualization.Stats;
 /// </summary>
 public class TreeStats
 {
+    /// <summary>
+    /// Stats for insert operations
+    /// </summary>
     private List<OperationStats> InsertStats = [];
+
+    /// <summary>
+    /// Stats for delete operations
+    /// </summary>
     private List<OperationStats> DeleteStats = [];
+
+    /// <summary>
+    /// Stats for search operations
+    /// </summary>
     private List<OperationStats> SearchStats = [];
 
     /// <summary>
