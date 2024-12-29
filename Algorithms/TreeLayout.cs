@@ -24,7 +24,7 @@ internal class TreeLayout
     {
         // Layout func might be called before the heigth cache is reset on all nodes
         // Therefore, we calculate the tree heigth recursively here
-        TreeHeight = tree.Root.CalcHeight();
+        TreeHeight = tree.Root.CalcHeight() + 1;
         LastUsedSlotsPerLevel = Enumerable.Repeat(double.NegativeInfinity, TreeHeight).ToList();
         LayoutNode(tree.Root);
 

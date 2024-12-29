@@ -732,7 +732,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         // parent?.OrphanChildren(true, false);
         // topChild.OrphanChildren(true, false);
 
-        SetText($"Rotating right around pivot {middleChild.Value}", TextAction.Violet);
+        SetText($"Rotating {(bLeftRotation ? "left" : "right")} around pivot {middleChild.Value}", TextAction.Violet);
 
         await AnimAdoption(middleChild, topChild);
         // middleChild.AdoptChild(topChild);
