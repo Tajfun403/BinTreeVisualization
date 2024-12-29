@@ -22,8 +22,8 @@ internal class TreeLayout
     /// <param name="tree">The tree</param>
     public void LayoutTree<T>(BinTree<T> tree) where T : IComparable<T>
     {
-        // throw new NotImplementedException();
-        // return;
+        // Layout func might be called before the heigth cache is reset on all nodes
+        // Therefore, we calculate the tree heigth recursively here
         TreeHeight = tree.Root.CalcHeight();
         LastUsedSlotsPerLevel = Enumerable.Repeat(double.NegativeInfinity, TreeHeight).ToList();
         LayoutNode(tree.Root);
