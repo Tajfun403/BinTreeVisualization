@@ -20,12 +20,12 @@ public partial class Node<T> where T : IComparable<T>
     /// <summary>
     /// Backing element placed in the UI
     /// </summary>
-    public NodeControl BackingControl { get; set; }
+    public NodeControl BackingControl { get; private init; }
 
     /// <summary>
     /// UI arrow pointing to this node
     /// </summary>
-    public NodeArrow SelfArrow { get; set; } = null;
+    public NodeArrow SelfArrow { get; private set; } = null;
 
     /// <summary>
     /// Offset by which nodes should be separated vertically.
@@ -70,6 +70,11 @@ public partial class Node<T> where T : IComparable<T>
     /// </summary>
     public Point CurrLoc => GetLocOf(BackingControl);
 
+    /// <summary>
+    /// Get location of a specified control
+    /// </summary>
+    /// <param name="control">The control to get location of</param>
+    /// <returns>The location of the specified control</returns>
     private static Point GetLocOf(NodeControl control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
 
     /// <summary>

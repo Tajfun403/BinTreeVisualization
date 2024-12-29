@@ -24,6 +24,9 @@ namespace BinTreeVisualization.UI;
 /// </summary>
 public partial class BinTreeMan : Page, INotifyPropertyChanged
 {
+    /// <summary>
+    /// The associated binary tree whose data is being displayed.
+    /// </summary>
     public BinTree<double> BinTree { get; set; }
 
     /// <summary>
@@ -39,6 +42,9 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Backing bool for whether or not to perform AVL rotations.
+    /// </summary>
     public bool PerformRotations
     {
         get;
@@ -66,6 +72,11 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         await BinTree.Insert(value);
     }
 
+    /// <summary>
+    /// Click event - perform an insert operation.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     async void OnInsert(object sender, RoutedEventArgs e)
     {
         if (GetDoubleArg(out double arg))
@@ -74,18 +85,33 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         lastOperation = OnInsert;
     }
 
+    /// <summary>
+    /// Click event - on get min.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     void OnGetMin(object sender, RoutedEventArgs e)
     {
         BinTree.GetMin();
         lastOperation = OnGetMin;
     }
 
+    /// <summary>
+    /// Click event - on get max.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     void OnGetMax(object sender, RoutedEventArgs e)
     {
         BinTree.GetMax();
         lastOperation = OnGetMax;
     }
 
+    /// <summary>
+    /// Try to get the current <see cref="InputTextBox"/>'s value as a double.
+    /// </summary>
+    /// <param name="arg">Out arg: the parsed value</param>
+    /// <returns><see cref="true"/> if parse succeeded, <see cref="false"/> otherwise.</returns>
     bool GetDoubleArg(out double arg)
     {
         if (string.IsNullOrEmpty(OperationArgument))
@@ -99,6 +125,11 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         return false;
     }
 
+    /// <summary>
+    /// Click event - on find.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     void OnFind(object sender, RoutedEventArgs e)
     {
         if (GetDoubleArg(out double arg))
@@ -107,6 +138,11 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         lastOperation = OnFind;
     }
 
+    /// <summary>
+    /// Click event - on delete
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     void OnDelete(object sender, RoutedEventArgs e)
     {
         if (GetDoubleArg(out double arg))
@@ -114,26 +150,32 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         lastOperation = OnDelete;
     }
 
+    /// <summary>
+    /// Backing field for the count of items to add.
+    /// </summary>
     public int AddItemsCount { get; set
         {
             field = value;
-            AddItemsCountText = $"Insert {value} items";
+            // AddItemsCountText = $"Insert {value} items";
             OnPropertyChanged();
+            OnPropertyChanged(nameof(AddItemsCountText));
         }
     } = 20;
 
-    public string AddItemsCountText
-    {
-        get => $"Insert {AddItemsCount} items";
-        set
-        {
-            field = value;
-            OnPropertyChanged();
-        }
-    }
+    /// <summary>
+    /// UI text for the "Insert X items" button.
+    /// </summary>
+    public string AddItemsCountText => $"Insert {AddItemsCount} items";
 
+    /// <summary>
+    /// List of possible values for <see cref="AddItemsCount"/>.
+    /// </summary>
     List<int> AddItemsCounts = [10, 20, 50, 100, 200];
 
+    /// <summary>
+    /// Switch the value of <see cref="AddItemsCount"/> to the next or previous value.
+    /// </summary>
+    /// <param name="bToDown">Whether to switch the value down</param>
     void SwitchAddItemsCount(bool bToDown)
     {
         int index = AddItemsCounts.IndexOf(AddItemsCount);
@@ -151,6 +193,10 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Click event - on add random items.
+    /// </summary>
+    /// <param name="count">The amount of random items to add</param>
     async void AddRandomItems(int count)
     {
         Stopwatch watch = new();
@@ -173,6 +219,11 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
 
     Action<object, RoutedEventArgs> lastOperation;
 
+    /// <summary>
+    /// On key pressed inside the <see cref="InputTextBox"/>.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnKeyDownTextbox(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
@@ -181,6 +232,11 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// On key pressed inside the entire main window.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnKeyDownBackground(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Escape)
@@ -209,19 +265,24 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Click event - on insert many items.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnInsertManyItems(object sender, RoutedEventArgs e)
     {
         AddRandomItems(AddItemsCount);
     }
 
+    /// <summary>
+    /// Click event - on clear.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void OnOpenStatsWindow(object sender, RoutedEventArgs e)
     {
         BinTree.Stats.ShowWindow();
-    }
-
-    private void CheckBox_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
-    {
-        BinTree.PerformRotations = e.NewValue as bool? ?? false;
     }
 }
 

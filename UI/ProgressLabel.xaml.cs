@@ -14,33 +14,32 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace BinTreeVisualization.UI
+namespace BinTreeVisualization.UI;
+
+/// <summary>
+/// A label that can represent progress which supports spawn/despawn animations and colors.
+/// </summary>
+public partial class ProgressLabel : Label
 {
-    /// <summary>
-    /// A label that can represent progress which supports spawn/despawn animations and colors.
-    /// </summary>
-    public partial class ProgressLabel : Label
+    public ProgressLabel()
     {
-        public ProgressLabel()
-        {
-            InitializeComponent();
-        }
-
-        /// <summary>
-        /// Trigger spawn fade-in animation.
-        /// </summary>
-        public void TriggerSpawnAnim()
-        {
-            BeginStoryboard((Storyboard)FindResource("AnimSpawn"));
-        }
-
-        /// <summary>
-        /// Trigger despawn fade-out animation.
-        /// </summary>
-        public void TriggerDespawnAnim()
-        {
-            BeginStoryboard((Storyboard)FindResource("AnimDespawn"));
-        }
-
+        InitializeComponent();
     }
+
+    /// <summary>
+    /// Trigger spawn fade-in animation.
+    /// </summary>
+    public void TriggerSpawnAnim()
+    {
+        BeginStoryboard((Storyboard)FindResource("AnimSpawn"));
+    }
+
+    /// <summary>
+    /// Trigger despawn fade-out animation.
+    /// </summary>
+    public void TriggerDespawnAnim()
+    {
+        BeginStoryboard((Storyboard)FindResource("AnimDespawn"));
+    }
+
 }

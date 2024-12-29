@@ -20,7 +20,7 @@ using System.Windows.Shapes;
 namespace BinTreeVisualization.UI;
 
 /// <summary>
-/// Interaction logic for BinTree.xaml
+/// WPF UserControl that holds all binary tree's node.
 /// </summary>
 public partial class BinTreeControl : UserControl
 {

@@ -14,7 +14,7 @@ using System.Windows.Shapes;
 namespace BinTreeVisualization;
 
 /// <summary>
-/// Interaction logic for MainWindow.xaml
+/// Main window which holds the <see cref="BinTreeMan"/> page.
 /// </summary>
 public partial class MainWindow : Window
 {

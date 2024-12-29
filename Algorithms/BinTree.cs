@@ -21,7 +21,7 @@ namespace BinTreeVisualization.Algorithms;
 /// A binary search tree, associated with a WPF backing control that nodes are being represented on.<para/>
 /// Can function as a basic BST and an AVL tree.
 /// </summary>
-/// <typeparam name="T">Node type</typeparam>
+/// <typeparam name="T">The type of data this tree's nodes hold</typeparam>
 public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
 {
     /// <summary>
@@ -55,7 +55,14 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     {
     }
 
+    /// <summary>
+    /// The count of comparisons between nodes' values which were performed during the last operation
+    /// </summary>
     private int ComparisonsCount = 0;
+
+    /// <summary>
+    /// The count of traversal between nodes (going up and down the tree) which were performed during the last operation
+    /// </summary>
     private int TraversalCount = 0;
 
     /// <summary>
@@ -67,7 +74,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// Coalesce gathered statistics into an <see cref="OperationStats"/> with the specified <paramref name="type"/> and append to the tree's <see cref="Stats"/>.<para/>
     /// Resets current operation's stats.
     /// </summary>
-    /// <param name="type"></param>
+    /// <param name="type">The type of operation which was performed</param>
     private void FinishOperationStats(OperationType type)
     {
         var statsEntry = new OperationStats(ComparisonsCount, TraversalCount, Traverse().ToList().Count);
@@ -79,7 +86,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Create tree's root with the specified <paramref name="value"/>.
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="value">Value to create the root with</param>
     private void CreateRoot(T value)
     {
         Root = Node<T>.CreateRoot(value, this);
@@ -89,7 +96,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// Find <paramref name="value"/> in the tree.
     /// </summary>
     /// <param name="value">The value to find</param>
-    /// <returns></returns>
+    /// <returns>The found node. <see cref="null"/> if node with the requested value was not found.</returns>
     public async Task<Node<T>> Find(T value)
     {
         await OperationGuard();
@@ -104,7 +111,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// </summary>
     /// <param name="value">The value to find</param>
     /// <param name="bAsSupportingOp"><see cref="true"/> if it's executed as part of another operation and thus should not wait for exclusivity</param>
-    /// <returns></returns>
+    /// <returns>The found node. <see cref="null"/> if node with the requested value was not found.</returns>
     private async Task<Node<T>> Find(T value, bool bAsSupportingOp)
     {
         if (bAsSupportingOp)
@@ -117,7 +124,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// </summary>
     /// <param name="value">The value to find.</param>
     /// <param name="currNode">Subtree to search for the node in currently.</param>
-    /// <returns></returns>
+    /// <returns>The found node. <see cref="null"/> if node with the requested value was not found.</returns>
     public async Task<Node<T>> Find(T value, Node<T> currNode)
     {
         TraversalCount++;
@@ -162,31 +169,31 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Get minimum value in the tree.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The min value in the tree</returns>
     public async Task<T> GetMin() => (await GetMin(Root)).Value;
     /// <summary>
     /// Get maximum value in the tree.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The max value in the tree</returns>
     public async Task<T> GetMax() => (await GetMax(Root)).Value;
 
     /// <summary>
     /// Blink a node for 500ms and return once the blink starts to fade.
     /// </summary>
-    /// <param name="n"></param>
+    /// <param name="node">Node to blink</param>
     /// <returns></returns>
-    private async Task Blink(Node<T> n)
+    private async Task Blink(Node<T> node)
     {
-        n.Activate();
+        node.Activate();
         await Delay(500);
-        n.Deactivate();
+        node.Deactivate();
     }
 
     /// <summary>
     /// Get minimum in the subtree starting by the specified node.
     /// </summary>
-    /// <param name="treeBase"></param>
-    /// <returns></returns>
+    /// <param name="treeBase">Tree's base from which the search should start</param>
+    /// <returns>The node with the minimum value in the subtree</returns>
     public async Task<Node<T>> GetMin(Node<T> treeBase)
     {
         var it = treeBase;
@@ -209,8 +216,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Get max in the subtree starting by the specified node.
     /// </summary>
-    /// <param name="treeBase"></param>
-    /// <returns></returns>
+    /// <param name="treeBase">Tree's base from which the search should start</param>
+    /// <returns>The node with the maximum value in the subtree</returns>
     public async Task<Node<T>> GetMax(Node<T> treeBase)
     {
         var it = treeBase;
@@ -233,7 +240,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Delete node containing the specified value from the tree.
     /// </summary>
-    /// <param name="value"></param>
+    /// <param name="value">The value to remove</param>
     public async void Delete(T value)
     {
         await OperationGuard();
@@ -252,6 +259,12 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         VerifyTreeLayout();
     }
 
+    /// <summary>
+    /// Verify that the tree's layout is correct: 
+    /// i.e. no nodes overlap and the scale is appropriate for all nodes to fit in the window.
+    /// </summary>
+    /// <param name="fromMiddleOfOperation"><see cref="true"/> it is called from middle of an operation,
+    /// and <see cref="false"/> if it's called after operations are finished</param>
     public void VerifyTreeLayout(bool fromMiddleOfOperation = false)
     {
         Debug.WriteLine("Verifying tree layout and scale");
@@ -963,7 +976,10 @@ public enum TextAction
     Red
 }
 
-public static class TextActionColors
+/// <summary>
+/// Helper for colors of a <see cref="TextAction"/>
+/// </summary>
+public static class TextActionColorsHelper
 {
     /// <summary>
     /// Convert value from a color enum to a <see cref="System.Windows.Media.Color"/> color.

@@ -26,25 +26,36 @@ namespace BinTreeVisualization.Stats
             TitleBarHelper.EnableDarkMode(this);
         }
 
+        /// <summary>
+        /// Function to call when the tree's data changes.
+        /// </summary>
         void OnDataChanged()
         {
-            statsRef.Refresh(this);
+            StatsRef.Refresh(this);
         }
 
         public StatsWindow(TreeStats stats) : this()
         {
-            statsRef = stats;
+            StatsRef = stats;
             DataContext = this;
 
-            statsRef.OnDataChanged += OnDataChanged;
+            StatsRef.OnDataChanged += OnDataChanged;
             Closed += OnClosed;
         }
 
+        /// <summary>
+        /// Function to call on window's closing. Unsubcribes from the tree's data changed event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnClosed(object sender, EventArgs e)
         {
-            statsRef.OnDataChanged -= OnDataChanged;
+            StatsRef.OnDataChanged -= OnDataChanged;
         }
 
-        public TreeStats statsRef;
+        /// <summary>
+        /// Ref to the tree's data.
+        /// </summary>
+        public TreeStats StatsRef { get; set; }
     }
 }

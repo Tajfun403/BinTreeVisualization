@@ -18,343 +18,351 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Xml.Linq;
 
-namespace BinTreeVisualization.UI
+namespace BinTreeVisualization.UI;
+
+/// <summary>
+/// Represents an arrow that can point between nodes.
+/// </summary>
+public partial class NodeArrow : UserControl
 {
-    /// <summary>
-    /// Represents an arrow that can point between nodes.
-    /// </summary>
-    public partial class NodeArrow : UserControl
+    public NodeArrow()
     {
-        public NodeArrow()
-        {
-            InitializeComponent();
-            VerticalAlignment = VerticalAlignment.Top;
-            HorizontalAlignment = HorizontalAlignment.Center;
-            RenderTransformOrigin = new(0.0, 0.5);
-            TriggerSpawnAnim();
-        }
+        InitializeComponent();
+        VerticalAlignment = VerticalAlignment.Top;
+        HorizontalAlignment = HorizontalAlignment.Center;
+        RenderTransformOrigin = new(0.0, 0.5);
+        TriggerSpawnAnim();
+    }
 
-        private Canvas GetCanvas() => VisualTreeHelper.GetParent(this) as Canvas;
+    /// <summary>
+    /// Get the canvas this control is on.
+    /// </summary>
+    /// <returns></returns>
+    private Canvas GetCanvas() => VisualTreeHelper.GetParent(this) as Canvas;
 
-        /// <summary>
-        /// Current in-UI location
-        /// </summary>
-        public Point SelfLoc => GetLocOf(this);
+    /// <summary>
+    /// Current in-UI location
+    /// </summary>
+    public Point SelfLoc => GetLocOf(this);
 
-        private static Point GetLocOf(NodeArrow control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
+    /// <summary>
+    /// Get location of a specified control
+    /// </summary>
+    /// <param name="control">The control to get location of</param>
+    /// <returns>The location of the specified control</returns>
+    private static Point GetLocOf(NodeArrow control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
 
-/*        public Point Target
-        {
-            get;
-            set
+    /*        public Point Target
             {
-                field = value;
-                RotateToTarget(value);
+                get;
+                set
+                {
+                    field = value;
+                    RotateToTarget(value);
+                }
             }
-        }
-        public Point Source
-        {
-            get;
-            set
+            public Point Source
             {
-                field = value;
-                RotateToTarget(Target);
-                Canvas.SetTop(this, value.Y);
-                Canvas.SetLeft(this, value.X);
-                RotateToTarget(Target);
-            }
-        }*/
+                get;
+                set
+                {
+                    field = value;
+                    RotateToTarget(Target);
+                    Canvas.SetTop(this, value.Y);
+                    Canvas.SetLeft(this, value.X);
+                    RotateToTarget(Target);
+                }
+            }*/
 
-        /// <summary>
-        /// The current target the arrow points to.
-        /// </summary>
-        public Point Target
+    /// <summary>
+    /// The current target the arrow points to.
+    /// </summary>
+    public Point Target
+    {
+        get => (Point)GetValue(TargetProp);
+        set => SetValue(TargetProp, value);
+    }
+
+    /// <summary>
+    /// The current source the arrow points from.
+    /// </summary>
+    public Point Source
+    {
+        get => (Point)GetValue(SourceProp);
+        set => SetValue(SourceProp, value);
+    }
+
+    /// <summary>
+    /// The final target the arrow will point to after animations finish.
+    /// </summary>
+    public Point DesiredTarget { get; private set; }
+
+    /// <summary>
+    /// The final source the arrow will point from after animations finish.
+    /// </summary>
+    public Point DesiredSource { get; private set; }
+
+    /// <summary>
+    /// Current source dependency prop. Sets control's Canvas position automatically on <see cref="Setter"/>.
+    /// </summary>
+    public static readonly DependencyProperty SourceProp =
+DependencyProperty.Register(
+    "Source",
+    typeof(Point),
+    typeof(NodeArrow),
+    new PropertyMetadata(new Point(0, 0), OnSourceChanged));
+
+    /// <summary>
+    /// Current target dependency prop. Sets control's Canvas position automatically on <see cref="Setter"/>.
+    /// </summary>
+    public static readonly DependencyProperty TargetProp =
+DependencyProperty.Register(
+    "Target",
+    typeof(Point),
+    typeof(NodeArrow),
+    new PropertyMetadata(new Point(0, 0), OnTargetChanged));
+
+    /// <summary>
+    /// Refreshes the arrow's location on the Canvas.
+    /// </summary>
+    private static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var control = (NodeArrow)d;
+        if (e.NewValue is Point newTarget)
         {
-            get => (Point)GetValue(TargetProp);
-            set => SetValue(TargetProp, value);
+            control.RotateToTarget(newTarget);
         }
+    }
 
-        /// <summary>
-        /// The current source the arrow points from.
-        /// </summary>
-        public Point Source
+    /// <summary>
+    /// Refreshes the arrow's location on the Canvas.
+    /// </summary>
+    private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var control = (NodeArrow)d;
+        if (e.NewValue is Point newSource)
         {
-            get => (Point)GetValue(SourceProp);
-            set => SetValue(SourceProp, value);
+            Canvas.SetTop(control, newSource.Y);
+            Canvas.SetLeft(control, newSource.X);
+            control.RotateToTarget(control.Target);
         }
+    }
 
-        /// <summary>
-        /// The final target the arrow will point to after animations finish.
-        /// </summary>
-        public Point DesiredTarget { get; private set; }
+    /// <summary>
+    /// Set the arrow to instantly rotate towards specified target.
+    /// </summary>
+    /// <param name="target"></param>
+    public void RotateToTarget(Point target)
+    {
+        TransformGroup transformGroup = new();
 
-        /// <summary>
-        /// The final source the arrow will point from after animations finish.
-        /// </summary>
-        public Point DesiredSource { get; private set; }
+        /*            ScaleTransform scaleTransform = new(GetDistanceTo(target) / 100, 1);
+                    transformGroup.Children.Add(scaleTransform);*/
 
-        /// <summary>
-        /// Current source dependency prop. Sets control's Canvas position automatically on <see cref="Setter"/>.
-        /// </summary>
-        public static readonly DependencyProperty SourceProp =
-    DependencyProperty.Register(
-        "Source",
-        typeof(Point),
-        typeof(NodeArrow),
-        new PropertyMetadata(new Point(0, 0), OnSourceChanged));
+        RotateTransform rotateTransform = new(GetRotToTarget(target));
+        transformGroup.Children.Add(rotateTransform);
 
-        /// <summary>
-        /// Current target dependency prop. Sets control's Canvas position automatically on <see cref="Setter"/>.
-        /// </summary>
-        public static readonly DependencyProperty TargetProp =
-    DependencyProperty.Register(
-        "Target",
-        typeof(Point),
-        typeof(NodeArrow),
-        new PropertyMetadata(new Point(0, 0), OnTargetChanged));
+        Vector toTarget = target - Source;
+        toTarget.X = Math.Abs(toTarget.X);
+        toTarget.Y = Math.Abs(toTarget.Y);
 
-        /// <summary>
-        /// Refreshes the arrow's location on the Canvas.
-        /// </summary>
-        private static void OnTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        Vector scaledVec = toTarget.Normal() * (GetDistanceTo(target) / 100);
+        ScaleTransform scaleTransform = new(scaledVec.X, scaledVec.Y);
+        transformGroup.Children.Add(scaleTransform);
+
+        this.RenderTransform = transformGroup;
+    }
+
+    /// <summary>
+    /// Remove this arrow from the canvas.
+    /// </summary>
+    public async void RemoveSelf()
+    {
+        TriggerDespawnAnim();
+        await Task.Delay(200);
+        GetCanvas().Children.Remove(this);
+    }
+
+    /// <summary>
+    /// Get rotation in radians from current <see cref="Source"/> to the <paramref name="target"/>.<para/>
+    /// Does NOT use <see cref="DesiredSource"/> as this method is being used in live calculations.
+    /// </summary>
+    /// <param name="target">Absolute location of point to rotate to</param>
+    /// <returns>Degrees from source to target</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private double GetRotToTarget(Point target)
+    {
+        return Math.Atan2(target.Y - Source.Y, target.X - Source.X) * 180 / Math.PI;
+    }
+
+    /// <summary>
+    /// Get distance from current <see cref="Source"/> to the <paramref name="target"/>.<para/>
+    /// Does NOT use <see cref="DesiredSource"/> as this method is being used in live calculations.
+    /// </summary>
+    /// <param name="target">Absolute location of point to calculate the distance to</param>
+    /// <returns>WPF length units from to the target</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private double GetDistanceTo(Point target)
+    {
+        return Math.Sqrt(Math.Pow(target.X - Source.X, 2) + Math.Pow(target.Y - Source.Y, 2));
+    }
+
+    /// <summary>
+    /// Get a good angle counting from node's side (1, 0) for an arrow to go out of considering the amount of free space between nodes.<para/>
+    /// Reads <see cref="Node{T}.ToBottomOffset"/> and <see cref="Node{T}.NodeHeight"/> for calculations.
+    /// </summary>
+    /// <returns>A visually pleasing angle.</returns>
+    private static double GetGoodSideAngle()
+    {
+        double EmptySpaceBetweenNodes = Node<int>.ToBottomOffset - Node<int>.NodeHeight;
+        if (EmptySpaceBetweenNodes <= 10)
+            return 10;
+        else
+            return 45;
+    }
+
+    /// <summary>
+    /// Get location of a socket suitable to be pointed to by node's parent.
+    /// </summary>
+    /// <param name="fromUpperLeftCorner">Upper left coord of child node to point to</param>
+    /// <returns>Absolute position of the point on node's border</returns>
+    public static Point GetUpperArrowSocket(Point fromUpperLeftCorner)
+    {
+        double XOffset = Node<int>.NodeWidth / 2;
+        double YOffset = 0;
+        return new(fromUpperLeftCorner.X + XOffset, fromUpperLeftCorner.Y + YOffset);
+    }
+
+    /// <summary>
+    /// Get location of a socket suitable for a parent to point to the left node.
+    /// </summary>
+    /// <param name="fromUpperLeftCorner">Upper left coord of the parent for the arrow to be sourced from</param>
+    /// <returns>Absolute position of the point on node's border</returns>
+    public static Point GetLeftArrowSocket(Point fromUpperLeftCorner)
+    {
+        return GetNodeBorder(fromUpperLeftCorner, 180 - GetGoodSideAngle());
+    }
+
+    /// <summary>
+    /// Get location of socket suitable for a parent to point to the right node.
+    /// </summary>
+    /// <param name="fromUpperLeftCorner">Upper left coord of the parent for the arrow to be sourced from</param>
+    /// <returns>Absolute position of the point on node's border</returns>
+    public static Point GetRightArrowSocket(Point fromUpperLeftCorner)
+    {
+        return GetNodeBorder(fromUpperLeftCorner, GetGoodSideAngle());
+    }
+
+    /// <summary>
+    /// Get location of node's border on the specified agle, assuming <paramref name="degrees"/> = 0 is pointing to vec (1, 0)
+    /// </summary>
+    /// <param name="fromUpperLeftCorner">Upper left coord of the node</param>
+    /// <param name="degrees">Degrees</param>
+    /// <returns>Absolute position of the point on node's border</returns>
+    public static Point GetNodeBorder(Point fromUpperLeftCorner, double degrees)
+    {
+        double h = fromUpperLeftCorner.X + Node<int>.NodeWidth / 2;
+        double k = fromUpperLeftCorner.Y + Node<int>.NodeHeight / 2;
+
+        double a = Node<int>.NodeWidth / 2;
+        double b = Node<int>.NodeHeight / 2;
+
+        double theta = (degrees * Math.PI) / 180;
+
+        double x = h + a * Math.Cos(theta);
+        double y = k + b * Math.Sin(theta);
+
+        return new(x, y);
+    }
+
+    /// <summary>
+    /// Get location of socket suitable for a parent to point right downwards.
+    /// </summary>
+    /// <param name="fromUpperLeftCorner">Upper left coord of the parent for the arrow to be sourced from</param>
+    /// <returns>Absolute position of the point on node's border</returns>
+    public static Point GetLowerArrowSocket(Point fromUpperLeftCorner)
+    {
+        double XOffset = Node<int>.NodeWidth / 2;
+        double YOffset = Node<int>.NodeHeight;
+        return new(fromUpperLeftCorner.X + XOffset, fromUpperLeftCorner.Y + YOffset);
+    }
+
+    bool LastSourceSideWasRight = false;
+
+    /// <summary>
+    /// Repoint the source's location to new loc in a 0.5s animation.
+    /// </summary>
+    /// <param name="newSource">Upper left coord of the node's expected position</param>
+    public void MoveSourceToLoc(Point newSource)
+    {
+        bool bUseRightSocket = (DesiredTarget - newSource).X > 0;
+        newSource = bUseRightSocket ? GetRightArrowSocket(newSource) : GetLeftArrowSocket(newSource);
+        LastSourceSideWasRight = bUseRightSocket;
+        float dur = 0.5f;
+        PointAnimation sourceAnim = new()
         {
-            var control = (NodeArrow)d;
-            if (e.NewValue is Point newTarget)
-            {
-                control.RotateToTarget(newTarget);
-            }
-        }
+            To = newSource,
+            Duration = TimeSpan.FromSeconds(dur)
+        };
+        Storyboard storyboard = new();
+        Storyboard.SetTarget(sourceAnim, this);
+        Storyboard.SetTargetProperty(sourceAnim, new PropertyPath("(Source)"));
+        storyboard.Children.Add(sourceAnim);
+        storyboard.Begin();
+        DesiredSource = newSource;
+    }
 
-        /// <summary>
-        /// Refreshes the arrow's location on the Canvas.
-        /// </summary>
-        private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    /// <summary>
+    /// Repoint the target's location to new loc in a 0.5s animation.
+    /// </summary>
+    /// <param name="newTarget">Upper left coord of the node's expected position</param>
+    public void MoveTargetToLoc(Point newTarget)
+    {
+        // check if source rotation is needed as well
+        bool bUseRightSocket = (newTarget - DesiredSource).X > 0;
+        if (bUseRightSocket != LastSourceSideWasRight)
+            MoveSourceToLoc(bUseRightSocket ? GetRightArrowSocket(DesiredSource) : GetLeftArrowSocket(DesiredSource));
+
+        newTarget = GetUpperArrowSocket(newTarget);
+        float dur = 0.5f;
+        PointAnimation targetAnim = new()
         {
-            var control = (NodeArrow)d;
-            if (e.NewValue is Point newSource)
-            {
-                Canvas.SetTop(control, newSource.Y);
-                Canvas.SetLeft(control, newSource.X);
-                control.RotateToTarget(control.Target);
-            }
-        }
+            To = newTarget,
+            Duration = TimeSpan.FromSeconds(dur)
+        };
+        Storyboard storyboard = new();
+        Storyboard.SetTarget(targetAnim, this);
+        Storyboard.SetTargetProperty(targetAnim, new PropertyPath("(Target)"));
+        storyboard.Children.Add(targetAnim);
+        storyboard.Begin();
+        DesiredTarget = newTarget;
+    }
 
-        /// <summary>
-        /// Set the arrow to instantly rotate towards specified target.
-        /// </summary>
-        /// <param name="target"></param>
-        public void RotateToTarget(Point target)
-        {
-            TransformGroup transformGroup = new();
+    /// <summary>
+    /// Repoint the source and target locations to new locs in a 0.5s animation.
+    /// </summary>
+    /// <param name="newSource"></param>
+    /// <param name="newTarget"></param>
+    public void RotateToLoc(Point newSource, Point newTarget)
+    {
+        MoveSourceToLoc(newSource);
+        MoveTargetToLoc(newTarget);
+    }
 
-/*            ScaleTransform scaleTransform = new(GetDistanceTo(target) / 100, 1);
-            transformGroup.Children.Add(scaleTransform);*/
+    /// <summary>
+    /// Trigger spawn fade-in animation.
+    /// </summary>
+    public void TriggerSpawnAnim()
+    {
+        BeginStoryboard((Storyboard)FindResource("AnimSpawn"));
+    }
 
-            RotateTransform rotateTransform = new(GetRotToTarget(target));
-            transformGroup.Children.Add(rotateTransform);
-
-            Vector toTarget = target - Source;
-            toTarget.X = Math.Abs(toTarget.X);
-            toTarget.Y = Math.Abs(toTarget.Y);
-
-            Vector scaledVec = toTarget.Normal() * (GetDistanceTo(target) / 100);
-            ScaleTransform scaleTransform = new(scaledVec.X, scaledVec.Y);
-            transformGroup.Children.Add(scaleTransform);
-
-            this.RenderTransform = transformGroup;
-        }
-
-        /// <summary>
-        /// Remove this arrow from the canvas.
-        /// </summary>
-        public async void RemoveSelf()
-        {
-            TriggerDespawnAnim();
-            await Task.Delay(200);
-            GetCanvas().Children.Remove(this);
-        }
-
-        /// <summary>
-        /// Get rotation in radians from current <see cref="Source"/> to the <paramref name="target"/>.<para/>
-        /// Does NOT use <see cref="DesiredSource"/> as this method is being used in live calculations.
-        /// </summary>
-        /// <param name="target">Absolute location of point to rotate to</param>
-        /// <returns>Degrees from source to target</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double GetRotToTarget(Point target)
-        {
-            return Math.Atan2(target.Y - Source.Y, target.X - Source.X) * 180 / Math.PI;
-        }
-
-        /// <summary>
-        /// Get distance from current <see cref="Source"/> to the <paramref name="target"/>.<para/>
-        /// Does NOT use <see cref="DesiredSource"/> as this method is being used in live calculations.
-        /// </summary>
-        /// <param name="target">Absolute location of point to calculate the distance to</param>
-        /// <returns>WPF length units from to the target</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double GetDistanceTo(Point target)
-        {
-            return Math.Sqrt(Math.Pow(target.X - Source.X, 2) + Math.Pow(target.Y - Source.Y, 2));
-        }
-
-        /// <summary>
-        /// Get a good angle counting from node's side (1, 0) for an arrow to go out of considering the amount of free space between nodes.<para/>
-        /// Reads <see cref="Node{T}.ToBottomOffset"/> and <see cref="Node{T}.NodeHeight"/> for calculations.
-        /// </summary>
-        /// <returns>A visually pleasing angle.</returns>
-        private static double GetGoodSideAngle()
-        {
-            double EmptySpaceBetweenNodes = Node<int>.ToBottomOffset - Node<int>.NodeHeight;
-            if (EmptySpaceBetweenNodes <= 10)
-                return 10;
-            else
-                return 45;
-        }
-
-        /// <summary>
-        /// Get location of a socket suitable to be pointed to by node's parent.
-        /// </summary>
-        /// <param name="fromUpperLeftCorner">Upper left coord of child node to point to</param>
-        /// <returns>Absolute position of the point on node's border</returns>
-        public static Point GetUpperArrowSocket(Point fromUpperLeftCorner)
-        {
-            double XOffset = Node<int>.NodeWidth / 2;
-            double YOffset = 0;
-            return new(fromUpperLeftCorner.X + XOffset, fromUpperLeftCorner.Y + YOffset);
-        }
-
-        /// <summary>
-        /// Get location of a socket suitable for a parent to point to the left node.
-        /// </summary>
-        /// <param name="fromUpperLeftCorner">Upper left coord of the parent for the arrow to be sourced from</param>
-        /// <returns>Absolute position of the point on node's border</returns>
-        public static Point GetLeftArrowSocket(Point fromUpperLeftCorner)
-        {
-            return GetNodeBorder(fromUpperLeftCorner, 180 - GetGoodSideAngle());
-        }
-
-        /// <summary>
-        /// Get location of socket suitable for a parent to point to the right node.
-        /// </summary>
-        /// <param name="fromUpperLeftCorner">Upper left coord of the parent for the arrow to be sourced from</param>
-        /// <returns>Absolute position of the point on node's border</returns>
-        public static Point GetRightArrowSocket(Point fromUpperLeftCorner)
-        {
-            return GetNodeBorder(fromUpperLeftCorner, GetGoodSideAngle());
-        }
-
-        /// <summary>
-        /// Get location of node's border on the specified agle, assuming <paramref name="degrees"/> = 0 is pointing to vec (1, 0)
-        /// </summary>
-        /// <param name="fromUpperLeftCorner">Upper left coord of the node</param>
-        /// <param name="degrees">Degrees</param>
-        /// <returns>Absolute position of the point on node's border</returns>
-        public static Point GetNodeBorder(Point fromUpperLeftCorner, double degrees)
-        {
-            double h = fromUpperLeftCorner.X + Node<int>.NodeWidth / 2;
-            double k = fromUpperLeftCorner.Y + Node<int>.NodeHeight / 2;
-
-            double a = Node<int>.NodeWidth / 2;
-            double b = Node<int>.NodeHeight / 2;
-
-            double theta = (degrees * Math.PI) / 180;
-
-            double x = h + a * Math.Cos(theta);
-            double y = k + b * Math.Sin(theta);
-
-            return new(x, y);
-        }
-
-        /// <summary>
-        /// Get location of socket suitable for a parent to point right downwards.
-        /// </summary>
-        /// <param name="fromUpperLeftCorner">Upper left coord of the parent for the arrow to be sourced from</param>
-        /// <returns>Absolute position of the point on node's border</returns>
-        public static Point GetLowerArrowSocket(Point fromUpperLeftCorner)
-        {
-            double XOffset = Node<int>.NodeWidth / 2;
-            double YOffset = Node<int>.NodeHeight;
-            return new(fromUpperLeftCorner.X + XOffset, fromUpperLeftCorner.Y + YOffset);
-        }
-
-        bool LastSourceSideWasRight = false;
-
-        /// <summary>
-        /// Repoint the source's location to new loc in a 0.5s animation.
-        /// </summary>
-        /// <param name="newSource">Upper left coord of the node's expected position</param>
-        public void MoveSourceToLoc(Point newSource)
-        {
-            bool bUseRightSocket = (DesiredTarget - newSource).X > 0;
-            newSource = bUseRightSocket ? GetRightArrowSocket(newSource) : GetLeftArrowSocket(newSource);
-            LastSourceSideWasRight = bUseRightSocket;
-            float dur = 0.5f;
-            PointAnimation sourceAnim = new()
-            {
-                To = newSource,
-                Duration = TimeSpan.FromSeconds(dur)
-            };
-            Storyboard storyboard = new();
-            Storyboard.SetTarget(sourceAnim, this);
-            Storyboard.SetTargetProperty(sourceAnim, new PropertyPath("(Source)"));
-            storyboard.Children.Add(sourceAnim);
-            storyboard.Begin();
-            DesiredSource = newSource;
-        }
-
-        /// <summary>
-        /// Repoint the target's location to new loc in a 0.5s animation.
-        /// </summary>
-        /// <param name="newTarget">Upper left coord of the node's expected position</param>
-        public void MoveTargetToLoc(Point newTarget)
-        {
-            // check if source rotation is needed as well
-            bool bUseRightSocket = (newTarget - DesiredSource).X > 0;
-            if (bUseRightSocket != LastSourceSideWasRight)
-                MoveSourceToLoc(bUseRightSocket ? GetRightArrowSocket(DesiredSource) : GetLeftArrowSocket(DesiredSource));
-
-            newTarget = GetUpperArrowSocket(newTarget);
-            float dur = 0.5f;
-            PointAnimation targetAnim = new()
-            {
-                To = newTarget,
-                Duration = TimeSpan.FromSeconds(dur)
-            };
-            Storyboard storyboard = new();
-            Storyboard.SetTarget(targetAnim, this);
-            Storyboard.SetTargetProperty(targetAnim, new PropertyPath("(Target)"));
-            storyboard.Children.Add(targetAnim);
-            storyboard.Begin();
-            DesiredTarget = newTarget;
-        }
-
-        /// <summary>
-        /// Repoint the source and target locations to new locs in a 0.5s animation.
-        /// </summary>
-        /// <param name="newSource"></param>
-        /// <param name="newTarget"></param>
-        public void RotateToLoc(Point newSource, Point newTarget)
-        {
-            MoveSourceToLoc(newSource);
-            MoveTargetToLoc(newTarget);
-        }
-
-        /// <summary>
-        /// Trigger spawn fade-in animation.
-        /// </summary>
-        public void TriggerSpawnAnim()
-        {
-            BeginStoryboard((Storyboard)FindResource("AnimSpawn"));
-        }
-
-        /// <summary>
-        /// Trigger despawn fade-out animation.
-        /// </summary>
-        public void TriggerDespawnAnim()
-        {
-            BeginStoryboard((Storyboard)FindResource("AnimDespawn"));
-        }
+    /// <summary>
+    /// Trigger despawn fade-out animation.
+    /// </summary>
+    public void TriggerDespawnAnim()
+    {
+        BeginStoryboard((Storyboard)FindResource("AnimDespawn"));
     }
 }
 

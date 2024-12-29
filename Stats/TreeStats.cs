@@ -41,10 +41,10 @@ public class TreeStats
     }
 
     /// <summary>
-    /// Get list associated with the specified operation type
+    /// Get the list of data associated with the specified operation type
     /// </summary>
     /// <param name="type">The operation type</param>
-    /// <returns></returns>
+    /// <returns>List of data with the specified operation type</returns>
     /// <exception cref="ArgumentException"></exception>
     private List<OperationStats> GetList(OperationType type)
     {
@@ -135,7 +135,7 @@ public class TreeStats
     /// <summary>
     /// Refresh a plots window with the newest data.
     /// </summary>
-    /// <param name="window"></param>
+    /// <param name="window">The <see cref="StatsWindow"/> to refresh the data on</param>
     public void Refresh(StatsWindow window)
     {
         FillPlot(window.InsertPlot, OperationType.Insert);

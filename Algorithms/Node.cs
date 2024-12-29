@@ -15,7 +15,10 @@ using BinTreeVisualization.UI;
 
 namespace BinTreeVisualization.Algorithms;
 
-
+/// <summary>
+/// A binary tree's node
+/// </summary>
+/// <typeparam name="T">The type of data this node holds</typeparam>
 public partial class Node<T> where T : IComparable<T>
 {
     /// <summary>
@@ -43,17 +46,17 @@ public partial class Node<T> where T : IComparable<T>
     public T Value { get; private set; }
 
     /// <summary>
-    /// The left child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference./>
+    /// The left child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference.
     /// </summary>
     public Node<T> Left { get; private set; } = null;
 
     /// <summary>
-    /// The right child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference./>
+    /// The right child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference.
     /// </summary>
     public Node<T> Right { get; private set; } = null;
 
     /// <summary>
-    /// Cached node height
+    /// Cached node height. Can be refreshed with <see cref="RefreshHeight"/>
     /// </summary>
     public int Height
     {
@@ -74,8 +77,8 @@ public partial class Node<T> where T : IComparable<T>
     /// <summary>
     /// Internal ctor. Use static method <see cref="CreateRoot{T}(T, BinTree{T})"/> to create a new tree, or <see cref="SpawnChild(T, bool)"/> to spawn a new node.
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="tree"></param>
+    /// <param name="value">Value for the new node to be spawned with</param>
+    /// <param name="tree">The tree the node is in</param>
     private Node(T value, BinTree<T> tree)
     {
         Value = value;
@@ -85,16 +88,18 @@ public partial class Node<T> where T : IComparable<T>
     /// <summary>
     /// Spawn a new node as child of this node. This is the only way to spawn new nodes.
     /// </summary>
-    /// <param name="value"></param>
-    /// <param name="bLeft"></param>
-    /// <returns></returns>
+    /// <param name="value">Value for the new node to be spawned with</param>
+    /// <param name="bLeft">Whether to spawn new node as this node's left child</param>
+    /// <returns>The newly spawned node</returns>
     public Node<T> SpawnChild(T value, bool bLeft)
     {
-        var node = new Node<T>(value, Tree);
-        node.Parent = this;
         var UIControl = CreateUIElem(value, bLeft);
-        node.BackingControl = UIControl;
-        node.DesiredLoc = GetLocOf(UIControl);
+        var node = new Node<T>(value, Tree)
+        {
+            BackingControl = UIControl,
+            DesiredLoc = GetLocOf(UIControl)
+        };
+        node.Parent = this;
         if (bLeft)
         {
             Left = node;
@@ -119,28 +124,30 @@ public partial class Node<T> where T : IComparable<T>
     /// Create a root node to start a new tree.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <param name="value"></param>
-    /// <param name="parent"></param>
+    /// <param name="value">Value to create the root with</param>
+    /// <param name="tree">The tree in which the root should be created</param>
     /// <returns>The newly created <see cref="Node{T}"/></returns>
-    public static Node<T> CreateRoot<T>(T value, BinTree<T> parent) where T : IComparable<T>
+    public static Node<T> CreateRoot<T>(T value, BinTree<T> tree) where T : IComparable<T>
     {
         NodeControl el = new(value);
-        Node<T> newNode = new(value, parent);
-        newNode.BackingControl = el;
-        Canvas.SetLeft(el, 0);
+        Node<T> newNode = new(value, tree)
+        {
+            BackingControl = el,
+            DesiredLoc = new(0, 0)
+        };
         Canvas.SetTop(el, 0);
         newNode.DesiredLoc = new(0, 0);
-        parent.GetCanvas().Children.Add(el);
+        tree.GetCanvas().Children.Add(el);
         el.Activate();
         return newNode;
     }
 
     /// <summary>
     /// Adopt a child node. The child along its entire subtree will be moved to the correct side of this node.<para/>
-    /// If selves children slots are full, the child will itself adopt one of the current children in order to to create a chain.
+    /// If selves children slots are full, the passed-in <paramref name="node"/> will itself adopt one of the current children in order to create a chain.
     /// </summary>
-    /// <param name="node"></param>
-    /// <returns></returns>
+    /// <param name="node">The node to adopt</param>
+    /// <returns>The inserted node</returns>
     public Node<T> AdoptChild(Node<T> node)
     {
         if (node is null)
@@ -278,7 +285,7 @@ public partial class Node<T> where T : IComparable<T>
     /// <summary>
     /// Get the balance of the node - how much taller is its left children trace than the right one
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The node balance</returns>
     public int GetNodeBalance()
     {
         return (Left?.GetHeight() ?? 0) - (Right?.GetHeight() ?? 0);
@@ -289,7 +296,7 @@ public partial class Node<T> where T : IComparable<T>
     /// Returns null if the spot at this location is empty.
     /// </summary>
     /// <param name="toRight">Relative amount of node-slots to the right</param>
-    /// <returns></returns>
+    /// <returns>The node at the requested relative position.</returns>
     public Node<T> GetRelativeNode(int toRight)
     {
         var row = Tree.GetRow(GetDepth());
@@ -431,7 +438,10 @@ public enum Side
     Right
 }
 
-internal static class NodeExtension
+/// <summary>
+/// Extensions for <see cref="Side"/>
+/// </summary>
+internal static class SideExtensions
 {
     /// <summary>
     /// Get the opposite side
