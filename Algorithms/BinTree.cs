@@ -542,15 +542,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             currNode.Deactivate();
             await Delay(1000);
             child.Deactivate();
-            // layouting here throws "Exception thrown: 'System.ArgumentOutOfRangeException' in System.Private.CoreLib.dll"
-            // with no stack trace in the debug log and doesn't print anything else
-            // VerifyTreeLayout(true);
-
-/*            Task.Run(async () =>
-            {
-                await Task.Delay(1000);
-                VerifyTreeLayout(true);
-            });*/
+            VerifyTreeLayout(true);
             return currNode.Left!;
         }
         else if (!bGoLeft && currNode.Right is null)
@@ -561,9 +553,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
             currNode.Deactivate();
             await Delay(1000);
             child.Deactivate();
-            // layouting here throws "Exception thrown: 'System.ArgumentOutOfRangeException' in System.Private.CoreLib.dll"
-            // with no stack trace in the debug log and doesn't print anything else
-            // VerifyTreeLayout(true);
+            VerifyTreeLayout(true);
             return currNode.Right!;
         }
 

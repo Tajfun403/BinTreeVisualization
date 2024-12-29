@@ -61,10 +61,15 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         lastOperation = OnInsert;
     }
 
-    void OnInsert(object sender, RoutedEventArgs e)
+    private async void Insert(double value)
+    {
+        await BinTree.Insert(value);
+    }
+
+    async void OnInsert(object sender, RoutedEventArgs e)
     {
         if (GetDoubleArg(out double arg))
-            BinTree.Insert(arg);
+            await BinTree.Insert(arg);
 
         lastOperation = OnInsert;
     }

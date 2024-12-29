@@ -22,8 +22,9 @@ internal class TreeLayout
     /// <param name="tree">The tree</param>
     public void LayoutTree<T>(BinTree<T> tree) where T : IComparable<T>
     {
+        // throw new NotImplementedException();
         // return;
-        TreeHeight = tree.GetHeight();
+        TreeHeight = tree.Root.CalcHeight();
         LastUsedSlotsPerLevel = Enumerable.Repeat(double.NegativeInfinity, TreeHeight).ToList();
         LayoutNode(tree.Root);
 
