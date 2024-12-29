@@ -152,5 +152,25 @@ namespace BinTreeVisualization.UI
         /// Node's value as string. To be bound to the UI content.
         /// </summary>
         public string ValToStr => Value.ToString() ?? "null";
+
+        /// <summary>
+        /// Click node to quickly select it in the parent UI. <para/>
+        /// Relies on the established structure of Main Window -> MainFrame -> BinTreeMan -> InputTextBox.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Node_OnClick(object sender, MouseButtonEventArgs e)
+        {
+            var binTreeMan = ((Frame)Window.GetWindow(this).FindName("MainFrame")).Content as BinTreeMan;
+            if (binTreeMan is null)
+                return;
+            // var inputTextBox = (TextBox)Window.GetWindow(this).FindName("InputTextBox");
+            var inputTextBox = binTreeMan.InputTextBox;
+            if (inputTextBox is null)
+                return;
+            inputTextBox.Text = ValToStr;
+            this.Activate();
+            this.Deactivate();
+        }
     }
 }

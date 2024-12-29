@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:BinTreeVisualization.UI"
              mc:Ignorable="d" 
              d:DesignHeight="70" d:DesignWidth="120"
+             MouseLeftButtonUp="Node_OnClick"
          >
     <UserControl.Resources>
         <Color x:Key="ActiveColor">#b077e0</Color>
