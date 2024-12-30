@@ -20,12 +20,12 @@ public partial class Node<T> where T : IComparable<T>
     /// <summary>
     /// Backing element placed in the UI
     /// </summary>
-    public NodeControl BackingControl { get; private init; }
+    public required NodeControl BackingControl { get; init; }
 
     /// <summary>
     /// UI arrow pointing to this node
     /// </summary>
-    public NodeArrow SelfArrow { get; private set; } = null;
+    public NodeArrow? SelfArrow { get; private set; } = null;
 
     /// <summary>
     /// Offset by which nodes should be separated vertically.

@@ -20,7 +20,7 @@ using System.Windows.Shapes;
 namespace BinTreeVisualization.UI;
 
 /// <summary>
-/// WPF UserControl that holds all binary tree's node.
+/// WPF UserControl that holds all binary tree's nodes.
 /// </summary>
 public partial class BinTreeControl : UserControl
 {
@@ -151,7 +151,7 @@ public partial class BinTreeControl : UserControl
         // double distanceBetweenNodesOnHeight(int height) => Math.Pow(2, maxHeight - height) * Node<T>.ToSideOffset;
         double distanceBetweenNodesOnHeight(int height) => Math.Pow(2, maxHeight - height) * 20;
 
-        void Traverse(Node<T> curr)
+        void Traverse(Node<T>? curr)
         {
             if (curr is null)
                 return;

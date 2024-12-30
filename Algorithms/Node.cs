@@ -29,7 +29,7 @@ public partial class Node<T> where T : IComparable<T>
     /// <summary>
     /// The node's parent.
     /// </summary>
-    public Node<T> Parent
+    public Node<T>? Parent
     {
         get;
         set
@@ -48,12 +48,12 @@ public partial class Node<T> where T : IComparable<T>
     /// <summary>
     /// The left child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference.
     /// </summary>
-    public Node<T> Left { get; private set; } = null;
+    public Node<T>? Left { get; private set; } = null;
 
     /// <summary>
     /// The right child. Use <see cref="AdoptChild(Node{T})"/> or <see cref="OrphanChildren(bool, bool)"/> to change this reference.
     /// </summary>
-    public Node<T> Right { get; private set; } = null;
+    public Node<T>? Right { get; private set; } = null;
 
     /// <summary>
     /// Cached node height. Can be refreshed with <see cref="RefreshHeight"/>
@@ -132,10 +132,11 @@ public partial class Node<T> where T : IComparable<T>
         NodeControl el = new(value);
         Node<T> newNode = new(value, tree)
         {
-            BackingControl = el,
-            DesiredLoc = new(0, 0)
+            DesiredLoc = new(0, 0),
+            BackingControl = el
         };
         Canvas.SetTop(el, 0);
+        Canvas.SetLeft(el, 0);
         newNode.DesiredLoc = new(0, 0);
         tree.GetCanvas().Children.Add(el);
         el.Activate();
@@ -230,10 +231,7 @@ public partial class Node<T> where T : IComparable<T>
     /// <param name="other"></param>
     public void SwapValues(Node<T> other)
     {
-        var temp = other.Value;
-        other.Value = Value;
-        Value = temp;
-
+        (Value, other.Value) = (other.Value, Value);
         this.BackingControl.Value = Value;
         other.BackingControl.Value = other.Value;
     }
@@ -403,7 +401,7 @@ public partial class Node<T> where T : IComparable<T>
     /// <param name="side">The side</param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public Node<T> this[Side side]
+    public Node<T>? this[Side side]
     {
         get => side switch
         {

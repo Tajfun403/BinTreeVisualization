@@ -27,12 +27,12 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Tree's root node.
     /// </summary>
-    public Node<T> Root { get; set; }
+    public Node<T>? Root { get; set; }
 
     /// <summary>
     /// The UI control associated with the tree which holds all the visual nodes, arrows, and progress text.
     /// </summary>
-    public BinTreeControl BackingControl { get; init; }
+    public required BinTreeControl BackingControl { get; init; }
 
     /// <summary>
     /// Ref to the backing control's canvas.
@@ -93,14 +93,32 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     }
 
     /// <summary>
+    /// Verify whether the tree is not empty.
+    /// </summary>
+    /// <returns><see cref="true"/> if the tree is not empty, <see cref="false"/> otherwise</returns>
+    public async Task<bool> VerifyTreeIsNotEmpty()
+    {
+        if (Root is null)
+        {
+            SetText("Tree is empty", TextAction.Red);
+            await Delay(2000);
+            await ResetText();
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>
     /// Find <paramref name="value"/> in the tree.
     /// </summary>
     /// <param name="value">The value to find</param>
     /// <returns>The found node. <see cref="null"/> if node with the requested value was not found.</returns>
-    public async Task<Node<T>> Find(T value)
+    public async Task<Node<T>?> Find(T value)
     {
+        if (!await VerifyTreeIsNotEmpty())
+            return null;
         await OperationGuard();
-        var result = await Find(value, Root);
+        var result = await Find(value, Root!);
         FinishOperation();
         FinishOperationStats(OperationType.Search);
         return result;
@@ -112,7 +130,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <param name="value">The value to find</param>
     /// <param name="bAsSupportingOp"><see cref="true"/> if it's executed as part of another operation and thus should not wait for exclusivity</param>
     /// <returns>The found node. <see cref="null"/> if node with the requested value was not found.</returns>
-    private async Task<Node<T>> Find(T value, bool bAsSupportingOp)
+    private async Task<Node<T>?> Find(T value, bool bAsSupportingOp)
     {
         if (bAsSupportingOp)
             return await Find(value, Root);
@@ -125,8 +143,16 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <param name="value">The value to find.</param>
     /// <param name="currNode">Subtree to search for the node in currently.</param>
     /// <returns>The found node. <see cref="null"/> if node with the requested value was not found.</returns>
-    public async Task<Node<T>> Find(T value, Node<T> currNode)
+    public async Task<Node<T>?> Find(T value, Node<T> currNode)
     {
+        if (currNode is null)
+        {
+            SetText($"Couldn't find {value}", TextAction.Red);
+            await Delay(2000);
+            await ResetText();
+            return null;
+        }
+
         TraversalCount++;
         await ResetText();
         currNode.Activate();
@@ -163,19 +189,19 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         var nextNode = bGoLeft ? currNode.Left : currNode.Right;
         nextNode.Blink(true);
         await Delay(1000);
-        return await Find(value, bGoLeft ? currNode.Left : currNode.Right);
+        return await Find(value, nextNode);
     }
 
     /// <summary>
     /// Get minimum value in the tree.
     /// </summary>
     /// <returns>The min value in the tree</returns>
-    public async Task<T> GetMin() => (await GetMin(Root)).Value;
+    public async Task<T> GetMin() => await VerifyTreeIsNotEmpty() ? (await GetMin(Root!)).Value : default;
     /// <summary>
     /// Get maximum value in the tree.
     /// </summary>
     /// <returns>The max value in the tree</returns>
-    public async Task<T> GetMax() => (await GetMax(Root)).Value;
+    public async Task<T> GetMax() => await VerifyTreeIsNotEmpty() ? (await GetMax(Root!)).Value : default;
 
     /// <summary>
     /// Blink a node for 500ms and return once the blink starts to fade.
@@ -243,6 +269,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <param name="value">The value to remove</param>
     public async void Delete(T value)
     {
+        if (!await VerifyTreeIsNotEmpty())
+            return;
         await OperationGuard();
         Debug.WriteLine($"Deleting {value}");
         if (Root is null)
@@ -366,7 +394,6 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
                 Root = null!;
 
             TraversalCount++;
-            var victimsParentSquare = victim.Parent?.Parent;
             var victimParent = victim.Parent;
 
             await Delay(1000);
@@ -602,7 +629,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         var nextNode = bGoLeft ? currNode.Left : currNode.Right;
         nextNode.Blink(true);
         await Delay(1000);
-        var ret = await Insert(value, bGoLeft ? currNode.Left : currNode.Right);
+        var ret = await Insert(value, nextNode);
         // VerifyTreeLayout(true);
 
         // return ret;
@@ -618,8 +645,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     }
 
     /// <summary>
-    /// Check if subtree starting with the passed node is not skewed to a side, 
-    /// and performs a rotation if it is
+    /// Check if the subtree starting with the passed node is not skewed to a side, 
+    /// and perform a rotation if it is
     /// </summary>
     /// <param name="currNode">Subtree which starts by this node</param>
     /// <returns></returns>
@@ -784,7 +811,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Left-heavy subtree. Rotate middle nodes to the right.
     /// </summary>
-    /// <param name="currNode"></param>
+    /// <param name="currNode">Node which the unbalanced subtree starts with</param>
     /// <returns>New top child who the subtree starts with</returns>
     private async Task<Node<T>> RotateRight(Node<T> currNode)
     {
@@ -794,7 +821,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Right-heavy subtree. Rotate middle nodes to the right.
     /// </summary>
-    /// <param name="currNode"></param>
+    /// <param name="currNode">Node which the unbalanced subtree starts with</param>
     /// <returns>New top child who the subtree starts with</returns>
     private async Task<Node<T>> RotateLeft(Node<T> currNode)
     {
