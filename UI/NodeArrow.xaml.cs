@@ -52,27 +52,27 @@ public partial class NodeArrow : UserControl
     /// <returns>The location of the specified control</returns>
     private static Point GetLocOf(NodeArrow control) => new(Canvas.GetLeft(control), Canvas.GetTop(control));
 
-    /*        public Point Target
-            {
-                get;
-                set
-                {
-                    field = value;
-                    RotateToTarget(value);
-                }
-            }
-            public Point Source
-            {
-                get;
-                set
-                {
-                    field = value;
-                    RotateToTarget(Target);
-                    Canvas.SetTop(this, value.Y);
-                    Canvas.SetLeft(this, value.X);
-                    RotateToTarget(Target);
-                }
-            }*/
+    /*public Point Target
+    {
+        get;
+        set
+        {
+            field = value;
+            RotateToTarget(value);
+        }
+    }
+    public Point Source
+    {
+        get;
+        set
+        {
+            field = value;
+            RotateToTarget(Target);
+            Canvas.SetTop(this, value.Y);
+            Canvas.SetLeft(this, value.X);
+            RotateToTarget(Target);
+        }
+    }*/
 
     /// <summary>
     /// The current target the arrow points to.
@@ -151,13 +151,13 @@ DependencyProperty.Register(
     /// <summary>
     /// Set the arrow to instantly rotate towards specified target.
     /// </summary>
-    /// <param name="target"></param>
+    /// <param name="target">The target to rotate to</param>
     public void RotateToTarget(Point target)
     {
         TransformGroup transformGroup = new();
 
-        /*            ScaleTransform scaleTransform = new(GetDistanceTo(target) / 100, 1);
-                    transformGroup.Children.Add(scaleTransform);*/
+        /*ScaleTransform scaleTransform = new(GetDistanceTo(target) / 100, 1);
+        transformGroup.Children.Add(scaleTransform);*/
 
         RotateTransform rotateTransform = new(GetRotToTarget(target));
         transformGroup.Children.Add(rotateTransform);
@@ -341,8 +341,8 @@ DependencyProperty.Register(
     /// <summary>
     /// Repoint the source and target locations to new locs in a 0.5s animation.
     /// </summary>
-    /// <param name="newSource"></param>
-    /// <param name="newTarget"></param>
+    /// <param name="newSource">The new source for the arrow to point from</param>
+    /// <param name="newTarget">The new target for the arrow to point to</param>
     public void RotateToLoc(Point newSource, Point newTarget)
     {
         MoveSourceToLoc(newSource);

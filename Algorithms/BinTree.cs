@@ -95,7 +95,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// <summary>
     /// Verify whether the tree is not empty.
     /// </summary>
-    /// <returns><see cref="true"/> if the tree is not empty, <see cref="false"/> otherwise</returns>
+    /// <returns><see langword="true"/> if the tree is not empty, <see langword="false"/> otherwise</returns>
     public async Task<bool> VerifyTreeIsNotEmpty()
     {
         if (Root is null)
@@ -128,7 +128,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// Find <paramref name="value"/> in the tree.
     /// </summary>
     /// <param name="value">The value to find</param>
-    /// <param name="bAsSupportingOp"><see cref="true"/> if it's executed as part of another operation and thus should not wait for exclusivity</param>
+    /// <param name="bAsSupportingOp"><see langword="true"/> if it's executed as part of another operation and thus should not wait for exclusivity</param>
     /// <returns>The found node. <see cref="null"/> if node with the requested value was not found.</returns>
     private async Task<Node<T>?> Find(T value, bool bAsSupportingOp)
     {
@@ -291,8 +291,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// Verify that the tree's layout is correct: 
     /// i.e. no nodes overlap and the scale is appropriate for all nodes to fit in the window.
     /// </summary>
-    /// <param name="fromMiddleOfOperation"><see cref="true"/> it is called from middle of an operation,
-    /// and <see cref="false"/> if it's called after operations are finished</param>
+    /// <param name="fromMiddleOfOperation"><see langword="true"/> it is called from middle of an operation,
+    /// and <see langword="false"/> if it's called after operations are finished</param>
     public void VerifyTreeLayout(bool fromMiddleOfOperation = false)
     {
         Debug.WriteLine("Verifying tree layout and scale");
@@ -1011,8 +1011,8 @@ public static class TextActionColorsHelper
     /// <summary>
     /// Convert value from a color enum to a <see cref="System.Windows.Media.Color"/> color.
     /// </summary>
-    /// <param name="textAction"></param>
-    /// <returns></returns>
+    /// <param name="textAction">The text action to get the respective color of</param>
+    /// <returns>A <see cref="System.Windows.Media.Color"/> that corresponds to the passed <see cref="TextAction"/></returns>
     /// <exception cref="NotImplementedException"></exception>
     public static System.Windows.Media.Color GetColor(this TextAction textAction)
     {
@@ -1022,7 +1022,7 @@ public static class TextActionColorsHelper
             TextAction.Blink => NodeControl.StrokeBlue,
             TextAction.Violet => NodeControl.ActiveColor,
             TextAction.Red => NodeControl.RedColor,
-            _ => throw new NotImplementedException()
+            _ => throw new ArgumentException()
         };
     }
 }

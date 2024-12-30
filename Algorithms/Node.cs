@@ -226,9 +226,9 @@ public partial class Node<T> where T : IComparable<T>
     }
 
     /// <summary>
-    /// Swap value of this node with value from another one. Does NOT maintain binary tree properties!
+    /// Swap value of this node with value from another one. Does NOT ensure binary tree properties are maintained!
     /// </summary>
-    /// <param name="other"></param>
+    /// <param name="other">The other node</param>
     public void SwapValues(Node<T> other)
     {
         (Value, other.Value) = (other.Value, Value);

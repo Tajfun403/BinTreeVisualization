@@ -37,7 +37,7 @@ public partial class BinTreeControl : UserControl
     /// <summary>
     /// Set the canvas scale with an animation.
     /// </summary>
-    /// <param name="newScale"></param>
+    /// <param name="newScale">The new target scale to be set to after the animation finishes.</param>
     public void SetScaleAnim(double newScale)
     {
         Debug.WriteLine($"Setting tree scale to {newScale}");

@@ -111,7 +111,7 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
     /// Try to get the current <see cref="InputTextBox"/>'s value as a double.
     /// </summary>
     /// <param name="arg">Out arg: the parsed value</param>
-    /// <returns><see cref="true"/> if parse succeeded, <see cref="false"/> otherwise.</returns>
+    /// <returns><see langword="true"/> if parse succeeded, <see langword="false"/> otherwise.</returns>
     bool GetDoubleArg(out double arg)
     {
         if (string.IsNullOrEmpty(OperationArgument))

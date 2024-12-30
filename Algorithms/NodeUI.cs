@@ -114,9 +114,9 @@ public partial class Node<T> where T : IComparable<T>
     }
 
     /// <summary>
-    /// Create a UI arrow from this node pointing to another node, add it to <see cref="Canvas"/>, and return it.
+    /// Create a UI arrow from this node pointing to another node, add it to the <see cref="Canvas"/>, and return it.
     /// </summary>
-    /// <param name="node"></param>
+    /// <param name="node">The node the arrow should point to</param>
     /// <returns>The created UI element.</returns>
     private NodeArrow CreateArrowTo(Node<T> node)
     {
@@ -195,7 +195,7 @@ public partial class Node<T> where T : IComparable<T>
     /// Move the associated node control to a location and make its all its children follow it.
     /// </summary>
     /// <param name="loc">Final location to move the node to</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
+    /// <param name="bDelayAnimation">If <see langword="true"/>, cache the desired location and delay execution of the animation
     /// until <see cref="PlayDelayedAnimation"/> is called.</param>
     public void MoveTreeToLoc(Point loc, bool bDelayAnimation = false)
     {
@@ -207,7 +207,7 @@ public partial class Node<T> where T : IComparable<T>
     /// Move the associated node control by a delta location and make its all its children follow it.
     /// </summary>
     /// <param name="deltaLoc">Delta location to move the tree by</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
+    /// <param name="bDelayAnimation">If <see langword="true"/>, cache the desired location and delay execution of the animation
     /// until <see cref="PlayDelayedAnimation"/> is called.</param>
     public void MoveTreeByLoc(Point deltaLoc, bool bDelayAnimation = false)
     {
@@ -218,7 +218,7 @@ public partial class Node<T> where T : IComparable<T>
     /// Move all the children of this node (but NOT this node itself) by a delta location.
     /// </summary>
     /// <param name="deltaLoc">Delta location to move the tree by</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation 
+    /// <param name="bDelayAnimation">If <see langword="true"/>, cache the desired location and delay execution of the animation 
     /// until <see cref="PlayDelayedAnimation"/> is called.</param>
     public void MoveChildrenByLoc(Point deltaLoc, bool bDelayAnimation = false)
     {
@@ -231,7 +231,7 @@ public partial class Node<T> where T : IComparable<T>
     /// Move the associated node control by a specified amount
     /// </summary>
     /// <param name="loc">Final location to move the node to</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation 
+    /// <param name="bDelayAnimation">If <see langword="true"/>, cache the desired location and delay execution of the animation 
     /// until <see cref="PlayDelayedAnimation"/> is called.</param>
     public void MoveByLoc(Point loc, bool bDelayAnimation = false)
     {
@@ -243,7 +243,7 @@ public partial class Node<T> where T : IComparable<T>
     /// Move the associated node control to specified location over 0.5 seconds
     /// </summary>
     /// <param name="loc">Location to move to</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation
+    /// <param name="bDelayAnimation">If <see langword="true"/>, cache the desired location and delay execution of the animation
     /// until <see cref="PlayDelayedAnimation"/> is called.</param>
     public void MoveToLoc(Point loc, bool bDelayAnimation = false)
     {
@@ -275,7 +275,7 @@ public partial class Node<T> where T : IComparable<T>
     /// Move the associated node control to specified location over 0.5 seconds. Always play the animation - regardless of instant mode or others.
     /// </summary>
     /// <param name="loc">Location to move to</param>
-    /// <param name="bDelayAnimation">If <see cref="true"/>, cache the desired location and delay execution of the animation until <see cref="PlayDelayedAnimation"/> is called.</param>
+    /// <param name="bDelayAnimation">If <see langword="true"/>, cache the desired location and delay execution of the animation until <see cref="PlayDelayedAnimation"/> is called.</param>
     public void MoveToLocWithAnim(Point loc, bool bDelayAnimation = false)
     {
         Debug.WriteLine($"Moving {{{this}}} from {DesiredLoc} to {loc}");
