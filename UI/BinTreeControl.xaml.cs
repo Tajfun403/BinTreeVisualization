@@ -68,6 +68,9 @@ public partial class BinTreeControl : UserControl
     /// <param name="tree">The tree</param>
     public void VerifyScale<T>(BinTree<T> tree) where T : IComparable<T>
     {
+        if (tree.Root is null)
+            return;
+
         var newScale = GetNewScale(tree);
 
         SetScaleAnim(newScale);

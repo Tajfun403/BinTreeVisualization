@@ -284,5 +284,11 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
     {
         BinTree.Stats.ShowWindow();
     }
+
+    private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (BinTree != null)
+            TreeNode?.VerifyScale(BinTree);
+    }
 }
 

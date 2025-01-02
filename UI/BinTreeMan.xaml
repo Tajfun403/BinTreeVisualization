@@ -13,7 +13,8 @@
       TextOptions.TextRenderingMode="Auto"
       Background="{DynamicResource MaterialDesignPaper}"
       FontFamily="{DynamicResource MaterialDesignFont}"
-      KeyDown="OnKeyDownBackground" 
+      KeyDown="OnKeyDownBackground"
+      SizeChanged="Page_SizeChanged"
       Title="BinTreeMan">
 
 
