@@ -7,6 +7,8 @@ Operations to support:
 - Find min
 - Find max
 
+Should ship with documentation that focuses on the properties of binary trees and used data structured, with documentation of the UI implementation being a secondary target.
+
 # Roadmap
 Project requirements:
 - [ X ] Initial UI setup

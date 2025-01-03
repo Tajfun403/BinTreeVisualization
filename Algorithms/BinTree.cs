@@ -381,7 +381,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// Delete specified node from the tree.<para/>
     /// You can find the node first with <see cref="Find(T)"/>
     /// </summary>
-    /// <param name="currNode">Node to delete</param>
+    /// <param name="victim">Node to delete</param>
     /// <returns></returns>
     public async Task Delete(Node<T> victim)
     {

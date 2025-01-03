@@ -8,7 +8,7 @@ Supports:
 - Deletion
 - Search
 
-All steps performed during an algorithm's execution are described in the log, and all nodes associated with the particular sub-operation are highlighted - what enables clear and easy following of an algorithm.
+All steps performed during an algorithm's execution are described in the log, and all the nodes associated with the particular sub-operation are highlighted - which enables clear and easy following of an algorithm.
 
 ![Rotation screenshot](https://i.imgur.com/lVTFZxL.png)
 
@@ -26,4 +26,6 @@ This allows one to verify the algorithms' time complexity with real-world data.
 - The tree is auto-layouted using a modified Wetherell and Shannon algorithm for visually pleasant and efficient use of space 
 
 # Build
-Uses .NET 9.0 and C# 13 preview with WPF UI. To build with Visual Studio 2022.
+Uses .NET 9.0 and C# 13 preview with WPF UI. To build with Visual Studio 2022.  
+Utilizes [Material Design](http://materialdesigninxaml.net/) NuGet package for the interface theme, as well as [ScottPlot library](https://scottplot.net/) for rendering the collected performance data into graphs.  
+The interface is connected to the logical binary tree with a composite model, where `BinTree<T>` and `Node<T>` manage their respective `BinTreeControl` and `BinTreeNode` WPF controls, respectively.

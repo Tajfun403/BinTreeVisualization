@@ -217,6 +217,9 @@ public partial class BinTreeMan : Page, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    /// <summary>
+    /// The last operation that was performed. It will be exeucted when pressing the Enter key.
+    /// </summary>
     Action<object, RoutedEventArgs> lastOperation;
 
     /// <summary>
