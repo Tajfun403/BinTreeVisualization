@@ -13,10 +13,14 @@ The base property of the binary tree which allows for O(log n) search is the way
 - Once a successor is found, swap the victim with the succesor, and then remove the victim whose been moved out of the original location. 
 - If the victim is not placed in a leaf position (i.e. having no children), repeat finding a successor and swapping until a leaf node is reached which can then be removed safely. 
 
+All operations have O(log n) time complexity, but can grow up to O(1) with an unbalanced tree.
+
 ## AVL
 AVL tree is a type of a binary search tree. It operates on the same base princinple regarding to the location of nodes, but with an additional mechanic - rotations.  
 Whenever a subtree becomes unbalances - i.e. one of its sides is at least two nodes taller than the other one - a node with the middle value is picked out of the long branch, and then the other nodes from this branch are balanced around it.  
 Thanks to this, a normally successive chain (eg. 1 -> 2 -> 3) becomes a neatly balanced, smaller tree (with node {2} pointing to {1} to the left and to {3} to the right).
+
+This helps ensure that tree doesn't become unbalanced and its operations do not degrade into O(1) complexity.
 
 Operations on AVL trees start exactly the same way as on base BSTs, but then after a node is either inserted or removed, all parents of the affected node are visitied to make sure the tree is kept in balance, and rotations are performed if they are not.
  
