@@ -630,6 +630,10 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         currNode.Deactivate();
         SetText($"Non-empty leaf; going deeper", TextAction.Blink);
         var nextNode = bGoLeft ? currNode.Left : currNode.Right;
+
+        if (!bSkipAnimations)
+            AnimRunner.HighlightSubtree(nextNode);
+
         nextNode.Blink(true);
         await Delay(1000);
         var ret = await Insert(value, nextNode);

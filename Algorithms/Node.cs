@@ -347,6 +347,8 @@ public partial class Node<T> where T : IComparable<T>
                 currRow = [];
             }
 
+            lastTier = currTier;
+
             currRow.Add(curr);
 
             if (curr.Left != null)
@@ -354,6 +356,9 @@ public partial class Node<T> where T : IComparable<T>
             if (curr.Right != null)
                 queue.Enqueue(curr.Right);
         }
+
+        // return final row
+        yield return new(lastTier, currRow);
     }
 
     /// <summary>
