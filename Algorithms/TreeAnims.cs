@@ -83,6 +83,5 @@ internal class TreeAnims<T> where T : IComparable<T>
         Canvas.SetRight(path, 0);
         Tree.GetCanvas().Children.Add(path);
         Panel.SetZIndex(path, -100);
-        Debug.WriteLine($"Curr children count: {Tree.GetCanvas().Children.Count}");
     }
 }
