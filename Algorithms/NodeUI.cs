@@ -59,7 +59,7 @@ public partial class Node<T> where T : IComparable<T>
     public const double NodeHeight = 70;
 
     /// <summary>
-    /// Desired location of the node. Might be either the current location, or the location the new will finish at once its animation end. <para/>
+    /// Desired location of the node. Might be either the current location, or the location the node will finish at once its animation ends. <para/>
     /// Use <see cref="MoveToLoc(Point)"/> to move the node to a new location.
     /// </summary>
     public Point DesiredLoc { get; private set; }

@@ -54,6 +54,26 @@ It is mostly a BST tree with added rotations, so a single base class with a `boo
   - Also highlighted here: https://willrosenbaum.com/assets/pdf/2023s-cosc-225/tidy-drawings-of-trees.pdf
 
 # Performance
-- Performance in instant mode is being capped by creating and running animations in the background
+- Performance in instant mode is being capped by creating and running animations in the background, as well as the async state machine
   - Especially by arrows whose locations are being computed on each movement.
 - Optimizing for instant mode would require disabling the animations, but it is probably not worth it for the purposes of this application.
+- I did eventually implement an animation delay mechanic which solved this issue
+	- The time of inserting 200 elements on Release mode dropped from 30 seconds to around 5 seconds
+- The next performance bottleneck is the Async state machine
+	- Setting the delay amount to zero does not stop the Async state machine from running
+	- Skipping it would require writing non-async functions equivalents or moving to heavy threads
+	- Currently, around 75% of code running time is spent on the state machine
+
+# Animation improvements
+- As of right now, animations which focus on blinks and node highlights are good, but pose some disadvantages:
+	- Blinks are short and thus might be not long enough to be noticed well
+	- Node highlight is also used for operations that change properties of a specific node, and should continue to be used as such
+- Operation that want to draw focus to a specific area of the tree (for example, for sake of choosing a side when traversing the tree) should instead highlight the tree's background partially.
+	- Polygon does not support rounded edges
+	- Can use Path with Fill to make pretty outlines
+	- https://learn.microsoft.com/en-us/dotnet/desktop/wpf/graphics-multimedia/geometry-overview
+
+# Red-Black Trees
+- I will expand the project to add Red-Black trees to it.
+- This will require transforming the current monolith BinTree class to a more inheritance-based approach
+- Vast majority of code will be able to be reused

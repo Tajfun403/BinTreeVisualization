@@ -53,6 +53,7 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
 
     public BinTree()
     {
+        AnimRunner.Tree = this;
     }
 
     /// <summary>
@@ -69,6 +70,8 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
     /// Statistics on how many operations did each operation on the tree require.
     /// </summary>
     public TreeStats Stats { get; private set; } = new();
+
+    private TreeAnims<T> AnimRunner { get; set; } = new();
 
     /// <summary>
     /// Coalesce gathered statistics into an <see cref="OperationStats"/> with the specified <paramref name="type"/> and append to the tree's <see cref="Stats"/>.<para/>
@@ -1033,4 +1036,4 @@ public static class TextActionColorsHelper
 /// <typeparam name="T"></typeparam>
 /// <param name="Tier">Tier</param>
 /// <param name="Nodes">All nodes in that tier</param>
-public record struct BinTreeRow<T>(int Tier, List<Node<T>> Nodes) where T : IComparable<T>;
+public record struct BinTreeRow<T>(int Tier, IEnumerable<Node<T>> Nodes) where T : IComparable<T>;

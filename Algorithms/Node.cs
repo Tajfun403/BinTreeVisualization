@@ -325,6 +325,38 @@ public partial class Node<T> where T : IComparable<T>
     }
 
     /// <summary>
+    /// Traverse the tree in Level Order Traversal and return <see cref="BinTreeRow{T}"/>s for each row.
+    /// </summary>
+    /// <returns>Returns an <see cref="IEnumerable{BinTreeRow{T}}}"/> of <see cref="BinTreeRow{T}"/>, where each item represents successive rows of the subtree tree anchored at this node.</returns>
+    public IEnumerable<BinTreeRow<T>> GetChildrenRows()
+    {
+        var queue = new Queue<Node<T>>();
+        int lastTier = -1;
+        queue.Enqueue(this);
+        lastTier = this.GetDepth();
+        List<Node<T>> currRow = [];
+        // BinTreeRow<T> currRow = new(lastTier, new List<Node<T>>());
+
+        while (queue.Count > 0)
+        {
+            var curr = queue.Dequeue();
+            int currTier = curr.GetDepth();
+            if (currTier != lastTier)
+            {
+                yield return new(lastTier, currRow);
+                currRow = [];
+            }
+
+            currRow.Add(curr);
+
+            if (curr.Left != null)
+                queue.Enqueue(curr.Left);
+            if (curr.Right != null)
+                queue.Enqueue(curr.Right);
+        }
+    }
+
+    /// <summary>
     /// Traverse ancestors of this node in the order parent -> grandparent -> ... -> root
     /// </summary>
     /// <returns>Returns IEnumerable that contains this and all parent nodes going from the bottom</returns>
