@@ -480,19 +480,15 @@ public class BinTree<T> : INotifyPropertyChanged where T : IComparable<T>
         get; private set
         {
             field = value;
-            OnInstantModeFinished?.Invoke();
+            if (!value)
+                OnInstantModeFinished?.Invoke();
         }
     } = false;
 
     /// <summary>
-    /// Signature for <see cref="OnInstantModeFinished"/>
+    /// Event that is invoked when <see cref="bSkipAnimations"/> is switched back to <see langword="false"/>.
     /// </summary>
-    public delegate void OnInstantModeFinishedFunc();
-
-    /// <summary>
-    /// Event that is invoked when <see cref="bSkipAnimations"/> is switched back to false.
-    /// </summary>
-    public event OnInstantModeFinishedFunc OnInstantModeFinished;
+    public event Action OnInstantModeFinished;
 
     /// <summary>
     /// Delays the execution of the current task if in not-instant context.<para/>
